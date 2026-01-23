@@ -20,14 +20,19 @@ const PORT = env_1.envVars.PORT;
 const DB_URL = env_1.envVars.DB_URL;
 const startServer = () => __awaiter(void 0, void 0, void 0, function* () {
     try {
+        console.info('🔄 Initializing server...');
         yield mongoose_1.default.connect(DB_URL);
-        console.log('Connected to db');
+        console.info('✅ Database connection established successfully');
         server = app_1.default.listen(PORT, () => {
-            console.log(`Server is listening to ${PORT} port`);
+            console.info(`🚀 Server started successfully`);
+            console.info(`📡 Listening on port: ${PORT}`);
+            console.info(`🌍 Environment: ${process.env.NODE_ENV || 'development'}`);
         });
     }
     catch (error) {
-        console.log(error);
+        console.error('❌ Failed to start the server');
+        console.error(error);
+        process.exit(1);
     }
 });
 startServer();
