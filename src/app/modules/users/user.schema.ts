@@ -8,3 +8,8 @@ export const createUserSchema = z.object({
   isDeleted: z.boolean().optional(),
   picture: z.string().optional(),
 });
+
+export const loginUserSchema = z.object({
+  email: z.email({ message: 'Enter a valid email' }),
+  password: z.string().min(1, 'Password is required'),
+});
