@@ -14,9 +14,9 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.UserControllers = void 0;
 const http_status_codes_1 = __importDefault(require("http-status-codes"));
+const catchAsync_1 = require("../../utils/catchAsync");
+const sendResponse_1 = __importDefault(require("../../utils/sendResponse"));
 const user_service_1 = require("./user.service");
-const catchAsync_1 = require("../../utis/catchAsync");
-const sendResponse_1 = __importDefault(require("../../utis/sendResponse"));
 // create user ==>
 const createUser = (0, catchAsync_1.catchAsync)((req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     const user = yield user_service_1.UserServices.createUser(req.body);
@@ -38,7 +38,43 @@ const getAllUsers = (0, catchAsync_1.catchAsync)((req, res, next) => __awaiter(v
         data: result,
     });
 }));
+// login ==>
+const loginUser = (0, catchAsync_1.catchAsync)((req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    const response = yield user_service_1.UserServices.loginUser(req.body);
+    (0, sendResponse_1.default)(res, {
+        statusCode: http_status_codes_1.default.OK,
+        success: true,
+        message: 'You have logged in successfully',
+        data: response,
+    });
+}));
+// delete user==>
+const deleteUser = (0, catchAsync_1.catchAsync)((req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    const result = yield user_service_1.UserServices.deleteUser(req.params.id);
+    (0, sendResponse_1.default)(res, {
+        success: true,
+        statusCode: http_status_codes_1.default.OK,
+        message: 'User deleted successfully',
+        data: [],
+    });
+}));
+// update user==>
+const updateUser = (0, catchAsync_1.catchAsync)((req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    const userId = req.params.id;
+    const payload = req.body;
+    const decodedToken = req.user;
+    const result = yield user_service_1.UserServices.updateUser(userId, payload, decodedToken);
+    (0, sendResponse_1.default)(res, {
+        success: true,
+        statusCode: http_status_codes_1.default.OK,
+        message: 'User updated successfully',
+        data: result,
+    });
+}));
 exports.UserControllers = {
     createUser,
     getAllUsers,
+    loginUser,
+    deleteUser,
+    updateUser,
 };

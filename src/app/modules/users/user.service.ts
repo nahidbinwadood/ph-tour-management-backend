@@ -4,8 +4,8 @@ import { User } from './user.model';
 import httpStatusCode from 'http-status-codes';
 import bcrypt from 'bcryptjs';
 import { envVars } from '../../config/env';
-import jwt, { JwtPayload } from 'jsonwebtoken';
-import mongoose from 'mongoose';
+import jwt, { JwtPayload, SignCallback } from 'jsonwebtoken';
+import { generateToken } from '../../utils/jwt';
 
 // create user==>
 const createUser = async (payload: Partial<IUser>) => {
@@ -19,7 +19,10 @@ const createUser = async (payload: Partial<IUser>) => {
     );
 
   // hash the password==>
-  payload.password = await bcrypt.hash(payload.password as string, 10);
+  payload.password = await bcrypt.hash(
+    payload.password as string,
+    Number(envVars.BCRYPT_SALT_ROUND)
+  );
 
   // set the auths==>
   const authProvider: IAuthProvider = {
@@ -65,9 +68,11 @@ const loginUser = async (payload: Partial<IUser>) => {
     role: isExist?.role,
   };
 
-  const JWT_SECRET = envVars.JWT_SECRET;
-
-  const accessToken = jwt.sign(jwtPayload, JWT_SECRET, { expiresIn: '7d' });
+  const accessToken = generateToken(
+    jwtPayload,
+    envVars.JWT_SECRET,
+    envVars.JWT_ACCESS_EXPIRES
+  );
 
   return {
     accessToken,
@@ -131,7 +136,7 @@ const updateUser = async (
   if (payload.password) {
     payload.password = await bcrypt.hash(
       payload.password,
-      envVars.BCRYPT_SALT_ROUND
+      Number(envVars.BCRYPT_SALT_ROUND)
     );
   }
 
