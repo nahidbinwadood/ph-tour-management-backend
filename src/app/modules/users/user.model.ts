@@ -1,6 +1,15 @@
 import { model, Schema } from 'mongoose';
 import { IAuthProvider, IsActive, IUser, Role } from './user.interface';
 
+const schemaTransform = {
+  virtuals: true,
+  transform: (_: any, ret: any) => {
+    ret.id = ret._id;
+    delete ret._id;
+    delete ret.__v;
+  },
+};
+
 const authProviderSchema = new Schema<IAuthProvider>(
   {
     provider: { type: String, required: true },
@@ -37,6 +46,8 @@ const userSchema = new Schema<IUser>(
   {
     timestamps: true,
     versionKey: false,
+    toJSON: schemaTransform,
+    toObject: schemaTransform,
   }
 );
 

@@ -2,16 +2,17 @@ import { Server } from 'http';
 
 import mongoose from 'mongoose';
 import app from './app';
-import { envVars } from './app/config/env';
-import { seedSuperAdmin } from './app/utils/seedSuperAdmin';
+import { loadEnvVariables } from './app/config/env';
 
 let server: Server;
 
-const PORT = envVars.PORT;
-const DB_URL = envVars.DB_URL;
+const envVars = loadEnvVariables();
 
 const startServer = async () => {
   try {
+    const PORT = envVars.PORT;
+    const DB_URL = envVars.DB_URL;
+
     console.info('🔄 Initializing server...');
     await mongoose.connect(DB_URL);
     console.info('✅ Database connection established successfully');
@@ -56,26 +57,12 @@ process.on('SIGINT', () => {
 
 // unhandled error==>
 process.on('unhandledRejection', (err) => {
-  console.log('Unhandled Rejection detected..Server is shutting down', err);
-
-  if (server) {
-    server.close(() => {
-      process.exit(1);
-    });
-  }
-
-  process.exit(1);
+  startServer();
 });
 
 // uncaught exception==>
 process.on('uncaughtException', (err) => {
-  console.log('Uncaught exception detected...Server is shutting down', err);
-
-  if (server) {
-    server.close(() => {
-      process.exit(1);
-    });
-  }
-
-  process.exit(1);
+  startServer();
 });
+
+export default envVars;

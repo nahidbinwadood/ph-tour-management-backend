@@ -16,10 +16,11 @@ const mongoose_1 = __importDefault(require("mongoose"));
 const app_1 = __importDefault(require("./app"));
 const env_1 = require("./app/config/env");
 let server;
-const PORT = env_1.envVars.PORT;
-const DB_URL = env_1.envVars.DB_URL;
+const envVars = (0, env_1.loadEnvVariables)();
 const startServer = () => __awaiter(void 0, void 0, void 0, function* () {
     try {
+        const PORT = envVars.PORT;
+        const DB_URL = envVars.DB_URL;
         console.info('🔄 Initializing server...');
         yield mongoose_1.default.connect(DB_URL);
         console.info('✅ Database connection established successfully');
@@ -59,21 +60,10 @@ process.on('SIGINT', () => {
 });
 // unhandled error==>
 process.on('unhandledRejection', (err) => {
-    console.log('Unhandled Rejection detected..Server is shutting down', err);
-    if (server) {
-        server.close(() => {
-            process.exit(1);
-        });
-    }
-    process.exit(1);
+    startServer();
 });
 // uncaught exception==>
 process.on('uncaughtException', (err) => {
-    console.log('Uncaught exception detected...Server is shutting down', err);
-    if (server) {
-        server.close(() => {
-            process.exit(1);
-        });
-    }
-    process.exit(1);
+    startServer();
 });
+exports.default = envVars;

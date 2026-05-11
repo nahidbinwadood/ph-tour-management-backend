@@ -1,6 +1,8 @@
 import { NextFunction, Request, Response } from 'express';
-import { envVars } from '../config/env';
 import AppError from '../errorHelpers/AppError';
+import envVars from '../../server';
+import { ZodError } from 'zod';
+import httpStatusCode from 'http-status-codes';
 
 export const globalErrorHandler = (
   error: any,
@@ -16,6 +18,20 @@ export const globalErrorHandler = (
     message = error?.message;
   } else {
     message = error?.message;
+  }
+
+  if (error instanceof ZodError) {
+    statusCode = httpStatusCode.BAD_REQUEST;
+    message = 'Validation Error';
+    const formattedError = error?.issues?.reduce(
+      (acc, er) => {
+        const path = er?.path.join('.');
+        acc[path] = er?.message;
+        return acc;
+      },
+      {} as Record<string, any>
+    );
+    error = formattedError;
   }
 
   res.status(statusCode).json({
