@@ -15,13 +15,11 @@ app.use(express.json());
 app.use('/api/v1', router);
 
 app.get('/', (req: Request, res: Response) => {
-  res
-    .status(httpStatusCode.OK)
-    .json({
-      success: true,
-      statusCode: httpStatusCode.OK,
-      message: 'The server is running',
-    });
+  res.status(httpStatusCode.OK).json({
+    success: true,
+    statusCode: httpStatusCode.OK,
+    message: 'The server is running',
+  });
 });
 
 // global error==>
@@ -30,3 +28,5 @@ app.use(globalErrorHandler);
 // not found error==>
 app.use(notFound);
 export default app;
+
+
