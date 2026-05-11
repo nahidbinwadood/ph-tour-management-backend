@@ -5,11 +5,11 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.userRoutes = void 0;
 const express_1 = require("express");
-const user_controller_1 = require("./user.controller");
-const validateRequest_1 = __importDefault(require("../../middlewares/validateRequest"));
-const user_schema_1 = require("./user.schema");
-const user_interface_1 = require("./user.interface");
 const checkAuth_1 = __importDefault(require("../../middlewares/checkAuth"));
+const validateRequest_1 = __importDefault(require("../../middlewares/validateRequest"));
+const user_controller_1 = require("./user.controller");
+const user_interface_1 = require("./user.interface");
+const user_schema_1 = require("./user.schema");
 const userRoutes = (0, express_1.Router)();
 exports.userRoutes = userRoutes;
 // create user==>

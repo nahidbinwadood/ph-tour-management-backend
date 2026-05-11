@@ -4,20 +4,6 @@ import { catchAsync } from '../../utils/catchAsync';
 import sendResponse from '../../utils/sendResponse';
 import { UserServices } from './user.service';
 
-// create user ==>
-const createUser = catchAsync(
-  async (req: Request, res: Response, next: NextFunction) => {
-    const user = await UserServices.createUser(req.body);
-    // response==>
-    sendResponse(res, {
-      success: true,
-      statusCode: httpStatusCode.CREATED,
-      message: 'User created successfully',
-      data: user,
-    });
-  }
-);
-
 // get all users==>
 const getAllUsers = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
@@ -27,20 +13,6 @@ const getAllUsers = catchAsync(
       statusCode: httpStatusCode.OK,
       message: 'All users data retrieved successfully!',
       data: result,
-    });
-  }
-);
-
-// login ==>
-const loginUser = catchAsync(
-  async (req: Request, res: Response, next: NextFunction) => {
-    const response = await UserServices.loginUser(req.body);
-
-    sendResponse(res, {
-      statusCode: httpStatusCode.OK,
-      success: true,
-      message: 'You have logged in successfully',
-      data: response,
     });
   }
 );
@@ -78,9 +50,7 @@ const updateUser = catchAsync(
 );
 
 export const UserControllers = {
-  createUser,
   getAllUsers,
-  loginUser,
   deleteUser,
   updateUser,
 };

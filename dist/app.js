@@ -16,16 +16,14 @@ app.use(express_1.default.json());
 // routes==>
 app.use('/api/v1', routes_1.default);
 app.get('/', (req, res) => {
-    res
-        .status(http_status_codes_1.default.OK)
-        .json({
+    res.status(http_status_codes_1.default.OK).json({
         success: true,
         statusCode: http_status_codes_1.default.OK,
         message: 'The server is running',
     });
 });
-// global error==>
-app.use(globalErrorHandler_1.globalErrorHandler);
 // not found error==>
 app.use(notFound_1.default);
 exports.default = app;
+// global error==>
+app.use(globalErrorHandler_1.globalErrorHandler);

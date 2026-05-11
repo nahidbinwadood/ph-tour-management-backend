@@ -4,8 +4,8 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.globalErrorHandler = void 0;
-const env_1 = require("../config/env");
 const AppError_1 = __importDefault(require("../errorHelpers/AppError"));
+const server_1 = __importDefault(require("../../server"));
 const globalErrorHandler = (error, req, res, next) => {
     let statusCode = 500;
     let message = `Something went wrong`;
@@ -21,7 +21,7 @@ const globalErrorHandler = (error, req, res, next) => {
         statusCode,
         message,
         error,
-        stack: env_1.envVars.NODE_ENV == 'development' ? error === null || error === void 0 ? void 0 : error.stack : null,
+        stack: server_1.default.NODE_ENV == 'development' ? error === null || error === void 0 ? void 0 : error.stack : null,
     });
 };
 exports.globalErrorHandler = globalErrorHandler;

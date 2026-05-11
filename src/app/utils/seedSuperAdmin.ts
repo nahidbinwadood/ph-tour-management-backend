@@ -1,6 +1,7 @@
+import envVars from '../../server';
 import { IAuthProvider, IUser, Role } from '../modules/users/user.interface';
 import { User } from '../modules/users/user.model';
-import { envVars } from './../config/env';
+
 import bcrypt from 'bcryptjs';
 
 export const seedSuperAdmin = async () => {

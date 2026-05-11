@@ -13,27 +13,27 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.seedSuperAdmin = void 0;
+const server_1 = __importDefault(require("../../server"));
 const user_interface_1 = require("../modules/users/user.interface");
 const user_model_1 = require("../modules/users/user.model");
-const env_1 = require("./../config/env");
 const bcryptjs_1 = __importDefault(require("bcryptjs"));
 const seedSuperAdmin = () => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const isSuperAdminExist = yield user_model_1.User.findOne({
-            email: env_1.envVars.SUPER_ADMIN_EMAIL,
+            email: server_1.default.SUPER_ADMIN_EMAIL,
         });
         if (isSuperAdminExist) {
             console.log('Super admin already exists');
             return;
         }
-        const hashedPassword = yield bcryptjs_1.default.hash(env_1.envVars.SUPER_ADMIN_PASSWORD, Number(env_1.envVars.BCRYPT_SALT_ROUND));
+        const hashedPassword = yield bcryptjs_1.default.hash(server_1.default.SUPER_ADMIN_PASSWORD, Number(server_1.default.BCRYPT_SALT_ROUND));
         const authProvider = {
             provider: 'credentials',
-            providerId: env_1.envVars.SUPER_ADMIN_EMAIL,
+            providerId: server_1.default.SUPER_ADMIN_EMAIL,
         };
         const payload = {
             name: 'Super Admin',
-            email: env_1.envVars.SUPER_ADMIN_EMAIL,
+            email: server_1.default.SUPER_ADMIN_EMAIL,
             password: hashedPassword,
             role: user_interface_1.Role.SUPER_ADMIN,
             isVerified: true,

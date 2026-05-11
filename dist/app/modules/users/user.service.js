@@ -13,13 +13,13 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.UserServices = void 0;
+const bcryptjs_1 = __importDefault(require("bcryptjs"));
+const http_status_codes_1 = __importDefault(require("http-status-codes"));
 const AppError_1 = __importDefault(require("../../errorHelpers/AppError"));
+const jwt_1 = require("../../utils/jwt");
 const user_interface_1 = require("./user.interface");
 const user_model_1 = require("./user.model");
-const http_status_codes_1 = __importDefault(require("http-status-codes"));
-const bcryptjs_1 = __importDefault(require("bcryptjs"));
-const env_1 = require("../../config/env");
-const jwt_1 = require("../../utils/jwt");
+const server_1 = __importDefault(require("../../../server"));
 // create user==>
 const createUser = (payload) => __awaiter(void 0, void 0, void 0, function* () {
     const isExist = yield user_model_1.User.findOne({ email: payload.email });
@@ -27,7 +27,7 @@ const createUser = (payload) => __awaiter(void 0, void 0, void 0, function* () {
     if (isExist)
         throw new AppError_1.default(http_status_codes_1.default.BAD_REQUEST, 'User already exists with this email');
     // hash the password==>
-    payload.password = yield bcryptjs_1.default.hash(payload.password, Number(env_1.envVars.BCRYPT_SALT_ROUND));
+    payload.password = yield bcryptjs_1.default.hash(payload.password, Number(server_1.default.BCRYPT_SALT_ROUND));
     // set the auths==>
     const authProvider = {
         provider: 'credentials',
@@ -55,7 +55,7 @@ const loginUser = (payload) => __awaiter(void 0, void 0, void 0, function* () {
         email: isExist === null || isExist === void 0 ? void 0 : isExist.email,
         role: isExist === null || isExist === void 0 ? void 0 : isExist.role,
     };
-    const accessToken = (0, jwt_1.generateToken)(jwtPayload, env_1.envVars.JWT_SECRET, env_1.envVars.JWT_ACCESS_EXPIRES);
+    const accessToken = (0, jwt_1.generateToken)(jwtPayload, server_1.default.JWT_SECRET, server_1.default.JWT_ACCESS_EXPIRES);
     return {
         accessToken,
     };
@@ -94,7 +94,7 @@ const updateUser = (userId, payload, decodedToken) => __awaiter(void 0, void 0, 
     }
     // update the password==>
     if (payload.password) {
-        payload.password = yield bcryptjs_1.default.hash(payload.password, Number(env_1.envVars.BCRYPT_SALT_ROUND));
+        payload.password = yield bcryptjs_1.default.hash(payload.password, Number(server_1.default.BCRYPT_SALT_ROUND));
     }
     const newUpdateUser = yield user_model_1.User.findByIdAndUpdate(userId, payload, {
         new: true,

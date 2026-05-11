@@ -1,82 +1,15 @@
+import bcrypt from 'bcryptjs';
+import httpStatusCode from 'http-status-codes';
+import { JwtPayload } from 'jsonwebtoken';
+import envVars from '../../../server';
 import AppError from '../../errorHelpers/AppError';
 import { IAuthProvider, IUser, Role } from './user.interface';
 import { User } from './user.model';
-import httpStatusCode from 'http-status-codes';
-import bcrypt from 'bcryptjs';
-import { envVars } from '../../config/env';
-import jwt, { JwtPayload, SignCallback } from 'jsonwebtoken';
-import { generateToken } from '../../utils/jwt';
-
-// create user==>
-const createUser = async (payload: Partial<IUser>) => {
-  const isExist = await User.findOne({ email: payload.email });
-
-  // check if the user already exists ===>
-  if (isExist)
-    throw new AppError(
-      httpStatusCode.BAD_REQUEST,
-      'User already exists with this email'
-    );
-
-  // hash the password==>
-  payload.password = await bcrypt.hash(
-    payload.password as string,
-    Number(envVars.BCRYPT_SALT_ROUND)
-  );
-
-  // set the auths==>
-  const authProvider: IAuthProvider = {
-    provider: 'credentials',
-    providerId: payload.email as string,
-  };
-
-  // create user==>
-  const user = await User.create({ ...payload, auths: [authProvider] });
-  return user;
-};
 
 // get all the users==>
 const getAllUsers = async () => {
   const user = await User.find({});
   return user;
-};
-
-// login ==>
-const loginUser = async (payload: Partial<IUser>) => {
-  const isExist = await User.findOne({ email: payload.email });
-
-  if (!isExist)
-    throw new AppError(
-      httpStatusCode.NOT_FOUND,
-      'No user found with this email'
-    );
-
-  const passwordMatch = await bcrypt.compare(
-    payload.password as string,
-    isExist.password as string
-  );
-
-  if (!passwordMatch)
-    throw new AppError(
-      httpStatusCode.NOT_FOUND,
-      'The email or password doesn’t seem right. Please double-check and try again 🔁'
-    );
-
-  const jwtPayload = {
-    userId: isExist?.id,
-    email: isExist?.email,
-    role: isExist?.role,
-  };
-
-  const accessToken = generateToken(
-    jwtPayload,
-    envVars.JWT_SECRET,
-    envVars.JWT_ACCESS_EXPIRES
-  );
-
-  return {
-    accessToken,
-  };
 };
 
 // delete user==>
@@ -149,9 +82,7 @@ const updateUser = async (
 };
 
 export const UserServices = {
-  createUser,
   getAllUsers,
-  loginUser,
   deleteUser,
   updateUser,
 };
