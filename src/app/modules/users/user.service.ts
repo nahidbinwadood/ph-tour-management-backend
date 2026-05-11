@@ -3,13 +3,18 @@ import httpStatusCode from 'http-status-codes';
 import { JwtPayload } from 'jsonwebtoken';
 import envVars from '../../../server';
 import AppError from '../../errorHelpers/AppError';
-import { IAuthProvider, IUser, Role } from './user.interface';
+import { IUser, Role } from './user.interface';
 import { User } from './user.model';
 
 // get all the users==>
 const getAllUsers = async () => {
   const user = await User.find({});
-  return user;
+
+  const updatedResponse = user?.map((user) => {
+    const { password, ...rest } = user.toObject();
+    return rest;
+  });
+  return updatedResponse;
 };
 
 // delete user==>

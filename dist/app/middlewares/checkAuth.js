@@ -9,10 +9,10 @@ const server_1 = __importDefault(require("../../server"));
 const checkAuth = (...authRoles) => (req, res, next) => {
     var _a;
     try {
-        const token = (_a = req.headers.authorization) === null || _a === void 0 ? void 0 : _a.split(' ')[1];
+        const token = (_a = req.headers.authorization) === null || _a === void 0 ? void 0 : _a.replace('Bearer ', '');
         if (!token)
             throw new AppError_1.default(403, 'No authorization token found');
-        const verifiedToken = (0, jwt_1.verifyToken)(token, server_1.default.JWT_SECRET);
+        const verifiedToken = (0, jwt_1.verifyToken)(token, server_1.default.JWT_ACCESS_SECRET);
         if (!verifiedToken)
             throw new AppError_1.default(403, 'You are not authorized');
         const verifyRole = authRoles.includes(verifiedToken === null || verifiedToken === void 0 ? void 0 : verifiedToken.role);

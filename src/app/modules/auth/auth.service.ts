@@ -9,6 +9,7 @@ import {
   verifyToken,
 } from '../../utils/jwt';
 import envVars from '../../../server';
+import { JwtPayload } from 'jsonwebtoken';
 
 // create user==>
 const createUser = async (payload: Partial<IUser>) => {
@@ -83,8 +84,66 @@ const getNewAccessToken = async (refreshToken: string) => {
   return tokens;
 };
 
+// reset password==>
+const resetPassword = async (
+  payload: { oldPassword: string; newPassword: string },
+  decodedToken: JwtPayload
+) => {
+  const { oldPassword, newPassword } = payload;
+
+  const isExist = await User.findOne({ email: decodedToken.email });
+
+  // throw error if the email is not exist==>
+  if (!isExist) {
+    throw new AppError(httpStatusCode.UNAUTHORIZED, 'Email doest not exist');
+  }
+
+  const checkOldPasswordIsCorrect = await bcrypt.compare(
+    oldPassword,
+    isExist.password as string
+  );
+
+  // throw error if the old password is incorrect==>
+  if (!checkOldPasswordIsCorrect) {
+    throw new AppError(httpStatusCode.BAD_REQUEST, 'Old password is incorrect');
+  }
+
+  const isNewPasswordIsSameAsOldPassword = await bcrypt.compare(
+    newPassword,
+    isExist.password as string
+  );
+
+  // throw error if the new password is same as old password==>
+  if (isNewPasswordIsSameAsOldPassword) {
+    throw new AppError(
+      httpStatusCode.BAD_REQUEST,
+      'New password cannot be same as old password'
+    );
+  }
+
+  const hashedPassword = await bcrypt.hash(
+    newPassword,
+    Number(envVars.BCRYPT_SALT_ROUND)
+  );
+
+  const updatedResponse = await User.findOneAndUpdate(
+    { _id: decodedToken.userId },
+    { password: hashedPassword },
+    { new: true }
+  );
+
+  if (updatedResponse) {
+    const { password, ...rest } = updatedResponse?.toObject();
+
+    return {
+      ...rest,
+    };
+  }
+};
+
 export const AuthServices = {
   credentialsLogin,
   createUser,
   getNewAccessToken,
+  resetPassword,
 };

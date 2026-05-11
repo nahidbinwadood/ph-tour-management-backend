@@ -60,22 +60,10 @@ process.on('SIGINT', () => {
 });
 // unhandled error==>
 process.on('unhandledRejection', (err) => {
-    console.log('Unhandled Rejection detected..Server is shutting down', err);
-    if (server) {
-        server.close(() => {
-            process.exit(1);
-        });
-    }
-    process.exit(1);
+    startServer();
 });
 // uncaught exception==>
 process.on('uncaughtException', (err) => {
-    console.log('Uncaught exception detected...Server is shutting down', err);
-    if (server) {
-        server.close(() => {
-            process.exit(1);
-        });
-    }
-    process.exit(1);
+    startServer();
 });
 exports.default = envVars;

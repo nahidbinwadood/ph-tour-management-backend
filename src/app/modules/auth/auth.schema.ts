@@ -40,3 +40,27 @@ export const loginSchema = z.object({
     .regex(/^(?=.*[A-Z])/, 'Password must contain at least 1 uppercase letter')
     .regex(/^(?=.*\d)/, 'Password must contain at least 1 number.'),
 });
+
+export const changePasswordSchema = z.object({
+  oldPassword: z
+    .string('Old Password must be a string')
+    .min(8, 'Old Password must be 8 characters long')
+    .regex(
+      /^(?=.*[A-Z])/,
+      'Old Password must contain at least 1 uppercase letter'
+    )
+    .regex(/^(?=.*\d)/, 'Old Password must contain at least 1 number.'),
+
+  newPassword: z
+    .string('New Password must be a string')
+    .min(8, 'New Password must be 8 characters long')
+    .regex(
+      /^(?=.*[A-Z])/,
+      'New Password must contain at least 1 uppercase letter'
+    )
+    .regex(
+      /^(?=.*[!@#$%^&*])/,
+      'New Password must contain at least 1 special character.'
+    )
+    .regex(/^(?=.*\d)/, 'New Password must contain at least 1 number.'),
+});
