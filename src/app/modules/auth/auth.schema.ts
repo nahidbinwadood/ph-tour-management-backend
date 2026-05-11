@@ -1,4 +1,5 @@
 import z from 'zod';
+import { Role } from '../users/user.interface';
 
 export const createUserSchema = z.object({
   name: z
@@ -9,7 +10,7 @@ export const createUserSchema = z.object({
     .email({ message: 'Enter a valid email' })
     .min(5, 'Email must be at least 5 characters long'),
   password: z
-    .string('Password must be a string')
+    .string('Password is required')
     .min(8, 'Password must be 8 characters long')
     .regex(/^(?=.*[A-Z])/, 'Password must contain at least 1 uppercase letter')
     .regex(
@@ -28,6 +29,9 @@ export const createUserSchema = z.object({
     .string('Address must be string')
     .max(200, { message: 'Address cannot exceed 200 characters.' })
     .optional(),
+  role: z
+    .enum(Object.keys(Role), `Role must be ${Object.keys(Role).join(', ')}`)
+    .optional(),
 });
 
 export const loginSchema = z.object({
@@ -35,7 +39,7 @@ export const loginSchema = z.object({
     .email({ message: 'Enter a valid email' })
     .min(5, 'Email must be at least 5 characters long'),
   password: z
-    .string('Password must be a string')
+    .string('Password is required')
     .min(8, 'Password must be 8 characters long')
     .regex(/^(?=.*[A-Z])/, 'Password must contain at least 1 uppercase letter')
     .regex(/^(?=.*\d)/, 'Password must contain at least 1 number.'),
@@ -43,7 +47,7 @@ export const loginSchema = z.object({
 
 export const changePasswordSchema = z.object({
   oldPassword: z
-    .string('Old Password must be a string')
+    .string('Old Password is required')
     .min(8, 'Old Password must be 8 characters long')
     .regex(
       /^(?=.*[A-Z])/,
@@ -52,7 +56,7 @@ export const changePasswordSchema = z.object({
     .regex(/^(?=.*\d)/, 'Old Password must contain at least 1 number.'),
 
   newPassword: z
-    .string('New Password must be a string')
+    .string('New Password is required')
     .min(8, 'New Password must be 8 characters long')
     .regex(
       /^(?=.*[A-Z])/,

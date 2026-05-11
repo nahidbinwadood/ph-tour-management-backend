@@ -23,6 +23,10 @@ router.patch(
 );
 
 // delete user==>
-router.delete('/:id', UserControllers.deleteUser);
+router.delete(
+  '/:id',
+  checkAuth(Role.ADMIN, Role.SUPER_ADMIN),
+  UserControllers.deleteUser
+);
 
 export const UserRoutes = router;

@@ -9,7 +9,6 @@ import { User } from './user.model';
 // get all the users==>
 const getAllUsers = async () => {
   const user = await User.find({});
-
   const updatedResponse = user?.map((user) => {
     const { password, ...rest } = user.toObject();
     return rest;
@@ -18,9 +17,47 @@ const getAllUsers = async () => {
 };
 
 // delete user==>
-const deleteUser = async (id: string) => {
-  if (!id)
+const deleteUser = async (id: string, decodedToken: JwtPayload) => {
+  // throw error if the id is not provided==>
+  if (!id) {
     throw new AppError(httpStatusCode.BAD_GATEWAY, 'Please provide user id');
+  }
+
+  //super admin cannot delete a super admin==>
+  const selectedUserData = await User.findOne({ _id: id });
+
+  // throw error if super admin wants to delete a super admin==>
+  if (
+    decodedToken?.role === Role.SUPER_ADMIN &&
+    selectedUserData?.role === Role.SUPER_ADMIN
+  ) {
+    throw new AppError(
+      httpStatusCode.UNAUTHORIZED,
+      'You are not authorized to delete a super admin'
+    );
+  }
+
+  // throw error if the admin wants to delete a super admin==>
+  if (
+    decodedToken.role == Role.ADMIN &&
+    selectedUserData?.role === Role.SUPER_ADMIN
+  ) {
+    throw new AppError(
+      httpStatusCode.UNAUTHORIZED,
+      "You don't have permission to delete a super admin"
+    );
+  }
+
+  // throw error if the admin wants to delete a admin==>
+  if (
+    decodedToken.role === Role.ADMIN &&
+    selectedUserData?.role === Role.ADMIN
+  ) {
+    throw new AppError(
+      httpStatusCode.UNAUTHORIZED,
+      "You don't have permission to delete a admin"
+    );
+  }
 
   const result = await User.findOneAndDelete({ _id: id });
 

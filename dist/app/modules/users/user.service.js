@@ -40,9 +40,28 @@ const getAllUsers = () => __awaiter(void 0, void 0, void 0, function* () {
     return updatedResponse;
 });
 // delete user==>
-const deleteUser = (id) => __awaiter(void 0, void 0, void 0, function* () {
-    if (!id)
+const deleteUser = (id, decodedToken) => __awaiter(void 0, void 0, void 0, function* () {
+    // throw error if the id is not provided==>
+    if (!id) {
         throw new AppError_1.default(http_status_codes_1.default.BAD_GATEWAY, 'Please provide user id');
+    }
+    //super admin cannot delete a super admin==>
+    const selectedUserData = yield user_model_1.User.findOne({ _id: id });
+    // throw error if super admin wants to delete a super admin==>
+    if ((decodedToken === null || decodedToken === void 0 ? void 0 : decodedToken.role) === user_interface_1.Role.SUPER_ADMIN &&
+        (selectedUserData === null || selectedUserData === void 0 ? void 0 : selectedUserData.role) === user_interface_1.Role.SUPER_ADMIN) {
+        throw new AppError_1.default(http_status_codes_1.default.UNAUTHORIZED, 'You are not authorized to delete a super admin');
+    }
+    // throw error if the admin wants to delete a super admin==>
+    if (decodedToken.role == user_interface_1.Role.ADMIN &&
+        (selectedUserData === null || selectedUserData === void 0 ? void 0 : selectedUserData.role) === user_interface_1.Role.SUPER_ADMIN) {
+        throw new AppError_1.default(http_status_codes_1.default.UNAUTHORIZED, "You don't have permission to delete a super admin");
+    }
+    // throw error if the admin wants to delete a admin==>
+    if (decodedToken.role === user_interface_1.Role.ADMIN &&
+        (selectedUserData === null || selectedUserData === void 0 ? void 0 : selectedUserData.role) === user_interface_1.Role.ADMIN) {
+        throw new AppError_1.default(http_status_codes_1.default.UNAUTHORIZED, "You don't have permission to delete a admin");
+    }
     const result = yield user_model_1.User.findOneAndDelete({ _id: id });
     if (!result) {
         throw new AppError_1.default(http_status_codes_1.default.NOT_FOUND, 'User not found');

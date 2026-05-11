@@ -43,6 +43,7 @@ const createUser = (payload) => __awaiter(void 0, void 0, void 0, function* () {
         provider: 'credentials',
         providerId: payload.email,
     };
+    console.log({ payload });
     // create user==>
     const user = yield user_model_1.User.create(Object.assign(Object.assign({}, payload), { auths: [authProvider] }));
     const _a = user.toObject(), { password } = _a, rest = __rest(_a, ["password"]);

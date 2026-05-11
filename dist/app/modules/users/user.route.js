@@ -16,5 +16,5 @@ router.get('/all-users', (0, checkAuth_1.default)(user_interface_1.Role.ADMIN, u
 // update user==>
 router.patch('/:id', (0, validateRequest_1.default)(user_schema_1.updateUserSchema), (0, checkAuth_1.default)(...Object.values(user_interface_1.Role)), user_controller_1.UserControllers.updateUser);
 // delete user==>
-router.delete('/:id', user_controller_1.UserControllers.deleteUser);
+router.delete('/:id', (0, checkAuth_1.default)(user_interface_1.Role.ADMIN, user_interface_1.Role.SUPER_ADMIN), user_controller_1.UserControllers.deleteUser);
 exports.UserRoutes = router;

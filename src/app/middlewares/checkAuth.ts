@@ -1,15 +1,15 @@
 import { NextFunction, Request, Response } from 'express';
-import AppError from '../errorHelpers/AppError';
-import jwt, { JwtPayload } from 'jsonwebtoken';
-import { Role } from '../modules/users/user.interface';
-import { verifyToken } from '../utils/jwt';
+import { JwtPayload } from 'jsonwebtoken';
 import envVars from '../../server';
+import AppError from '../errorHelpers/AppError';
+import { verifyToken } from '../utils/jwt';
 
 const checkAuth =
   (...authRoles: string[]) =>
   (req: Request, res: Response, next: NextFunction) => {
     try {
       const token = req.headers.authorization?.replace('Bearer ', '');
+
       if (!token) throw new AppError(403, 'No authorization token found');
 
       const verifiedToken = verifyToken(

@@ -3,9 +3,9 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+const server_1 = __importDefault(require("../../server"));
 const AppError_1 = __importDefault(require("../errorHelpers/AppError"));
 const jwt_1 = require("../utils/jwt");
-const server_1 = __importDefault(require("../../server"));
 const checkAuth = (...authRoles) => (req, res, next) => {
     var _a;
     try {

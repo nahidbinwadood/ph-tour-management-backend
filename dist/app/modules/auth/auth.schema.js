@@ -5,6 +5,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.changePasswordSchema = exports.loginSchema = exports.createUserSchema = void 0;
 const zod_1 = __importDefault(require("zod"));
+const user_interface_1 = require("../users/user.interface");
 exports.createUserSchema = zod_1.default.object({
     name: zod_1.default
         .string({ message: 'Name is require' })
@@ -14,7 +15,7 @@ exports.createUserSchema = zod_1.default.object({
         .email({ message: 'Enter a valid email' })
         .min(5, 'Email must be at least 5 characters long'),
     password: zod_1.default
-        .string('Password must be a string')
+        .string('Password is required')
         .min(8, 'Password must be 8 characters long')
         .regex(/^(?=.*[A-Z])/, 'Password must contain at least 1 uppercase letter')
         .regex(/^(?=.*[!@#$%^&*])/, 'Password must contain at least 1 special character.')
@@ -29,25 +30,28 @@ exports.createUserSchema = zod_1.default.object({
         .string('Address must be string')
         .max(200, { message: 'Address cannot exceed 200 characters.' })
         .optional(),
+    role: zod_1.default
+        .enum(Object.keys(user_interface_1.Role), `Role must be ${Object.keys(user_interface_1.Role).join(', ')}`)
+        .optional(),
 });
 exports.loginSchema = zod_1.default.object({
     email: zod_1.default
         .email({ message: 'Enter a valid email' })
         .min(5, 'Email must be at least 5 characters long'),
     password: zod_1.default
-        .string('Password must be a string')
+        .string('Password is required')
         .min(8, 'Password must be 8 characters long')
         .regex(/^(?=.*[A-Z])/, 'Password must contain at least 1 uppercase letter')
         .regex(/^(?=.*\d)/, 'Password must contain at least 1 number.'),
 });
 exports.changePasswordSchema = zod_1.default.object({
     oldPassword: zod_1.default
-        .string('Old Password must be a string')
+        .string('Old Password is required')
         .min(8, 'Old Password must be 8 characters long')
         .regex(/^(?=.*[A-Z])/, 'Old Password must contain at least 1 uppercase letter')
         .regex(/^(?=.*\d)/, 'Old Password must contain at least 1 number.'),
     newPassword: zod_1.default
-        .string('New Password must be a string')
+        .string('New Password is required')
         .min(8, 'New Password must be 8 characters long')
         .regex(/^(?=.*[A-Z])/, 'New Password must contain at least 1 uppercase letter')
         .regex(/^(?=.*[!@#$%^&*])/, 'New Password must contain at least 1 special character.')
