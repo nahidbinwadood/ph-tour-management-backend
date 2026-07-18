@@ -1,8 +1,8 @@
 import { NextFunction, Request, Response } from 'express';
 import AppError from '../errorHelpers/AppError';
-import envVars from '../../server';
 import { ZodError } from 'zod';
 import httpStatusCode from 'http-status-codes';
+import { envVars } from '../config/env';
 
 export const globalErrorHandler = (
   error: any,

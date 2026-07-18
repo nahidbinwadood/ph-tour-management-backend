@@ -1,15 +1,11 @@
+import bcrypt from 'bcryptjs';
+import httpStatusCode from 'http-status-codes';
+import { JwtPayload } from 'jsonwebtoken';
 import AppError from '../../errorHelpers/AppError';
+import { createUserTokens, generateNewAccessToken } from '../../utils/jwt';
 import { IAuthProvider, IUser } from '../users/user.interface';
 import { User } from '../users/user.model';
-import httpStatusCode from 'http-status-codes';
-import bcrypt from 'bcryptjs';
-import {
-  createUserTokens,
-  generateNewAccessToken,
-  verifyToken,
-} from '../../utils/jwt';
-import envVars from '../../../server';
-import { JwtPayload } from 'jsonwebtoken';
+import { envVars } from '../../config/env';
 
 // create user==>
 const createUser = async (payload: Partial<IUser>) => {
@@ -34,14 +30,14 @@ const createUser = async (payload: Partial<IUser>) => {
     providerId: payload.email as string,
   };
 
-  console.log({ payload });
-  
   // create user==>
   const user = await User.create({ ...payload, auths: [authProvider] });
 
-  const { password, ...rest } = user.toObject();
+  const userObject = user.toObject();
+  delete userObject.password;
+
   return {
-    ...rest,
+    ...userObject,
   };
 };
 
@@ -72,10 +68,11 @@ const credentialsLogin = async (payload: Partial<IUser>) => {
 
   const tokens = createUserTokens(isExist);
 
-  const { password, ...rest } = isExist.toObject();
+  const userObject = isExist.toObject();
+  delete userObject.password;
 
   return {
-    ...rest,
+    ...userObject,
     tokens,
   };
 };
@@ -135,10 +132,11 @@ const resetPassword = async (
   );
 
   if (updatedResponse) {
-    const { password, ...rest } = updatedResponse?.toObject();
+    const updatedObject = updatedResponse.toObject();
+    delete updatedObject.password;
 
     return {
-      ...rest,
+      ...updatedObject,
     };
   }
 };

@@ -1,9 +1,9 @@
 import jwt, { JwtPayload, SignOptions } from 'jsonwebtoken';
-import envVars from '../../server';
 import { IsActive, IUser } from '../modules/users/user.interface';
 import { User } from '../modules/users/user.model';
 import AppError from '../errorHelpers/AppError';
 import httpStatusCode from 'http-status-codes';
+import { envVars } from '../config/env';
 
 // create user token==>
 export const createUserTokens = (data: Partial<IUser>) => {
