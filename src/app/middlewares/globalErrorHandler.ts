@@ -1,8 +1,11 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { NextFunction, Request, Response } from 'express';
-import AppError from '../errorHelpers/AppError';
-import { ZodError } from 'zod';
 import httpStatusCode from 'http-status-codes';
+import jwt from 'jsonwebtoken';
 import { envVars } from '../config/env';
+import AppError from '../errorHelpers/AppError';
+import { IErrorSource } from '../interface/error.type';
 
 export const globalErrorHandler = (
   error: any,
@@ -13,32 +16,91 @@ export const globalErrorHandler = (
   let statusCode = 500;
   let message = `Something went wrong`;
 
-  if (error instanceof AppError) {
-    statusCode = error?.statusCode;
-    message = error?.message;
-  } else {
-    message = error?.message;
-  }
+  let errorSources: IErrorSource[] = [];
 
-  if (error instanceof ZodError) {
-    statusCode = httpStatusCode.BAD_REQUEST;
-    message = 'Validation Error';
-    const formattedError = error?.issues?.reduce(
-      (acc, er) => {
-        const path = er?.path.join('.');
-        acc[path] = er?.message;
-        return acc;
-      },
-      {} as Record<string, any>
-    );
-    error = formattedError;
+  switch (true) {
+    // App Error==>
+    case error instanceof AppError: {
+      statusCode = httpStatusCode.BAD_GATEWAY;
+      message = error?.message;
+      break;
+    }
+
+    // Mongoose errors (duplicate)==>
+    case error?.code === 11000: {
+      const duplicateValue = Object.values(error?.keyValue)[0];
+      statusCode = httpStatusCode.BAD_REQUEST;
+      message = `${duplicateValue} already exists`;
+      break;
+    }
+
+    // Object ID error Id error (Cast Error)=>
+    case error?.name === 'CastError': {
+      statusCode = httpStatusCode.BAD_REQUEST;
+      message = 'Invalid MongoDB ObjectID. Please provide a valid id';
+      break;
+    }
+
+    // Mongoose Validation Error=>
+    case error?.name === 'ValidationError': {
+      const err = Object.values(error?.errors);
+      const errItems: IErrorSource[] = [];
+      err?.forEach((item: any) =>
+        errItems?.push({
+          path: item?.path,
+          message: item?.message,
+        })
+      );
+      errorSources = errItems;
+      statusCode = httpStatusCode.BAD_REQUEST;
+      message = 'Invalid MongoDB ObjectID. Please provide a valid id';
+      break;
+    }
+
+    // Zod Validation error==>
+    case error?.name === 'ZodError': {
+      const errItems: IErrorSource[] = [];
+      error?.issues?.forEach((issue: any) =>
+        errItems?.push({
+          path: issue?.path[issue.path.length - 1],
+          message: issue?.message,
+        })
+      );
+
+      statusCode = httpStatusCode.BAD_REQUEST;
+      message = 'Zod Error';
+      errorSources = errItems;
+      break;
+    }
+
+    // ========= JWT ERROR(Token Expiration)=============
+    case error instanceof jwt.TokenExpiredError: {
+      statusCode = httpStatusCode.UNAUTHORIZED;
+      message = 'Session has expired. Please login again';
+      break;
+    }
+
+    // ========= JWT ERROR(Invalid Token)=============
+    case error instanceof jwt.JsonWebTokenError: {
+      statusCode = httpStatusCode.UNAUTHORIZED;
+      message = 'Invalid token. Please login again.';
+      break;
+    }
+
+    case error instanceof Error: {
+      statusCode = httpStatusCode.INTERNAL_SERVER_ERROR;
+      message = error.message || 'Internal Server Error';
+      console.log('✓ Handled as Generic Error');
+      break;
+    }
   }
 
   res.status(statusCode).json({
     status: false,
     statusCode,
     message,
-    error,
+    errorSources: envVars.NODE_ENV == 'development' ? errorSources : null,
+    error: envVars.NODE_ENV == 'development' ? error : null,
     stack: envVars.NODE_ENV == 'development' ? error?.stack : null,
   });
 };
