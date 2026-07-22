@@ -1,7 +1,7 @@
 import { NextFunction, Request, Response } from 'express';
-import zod, { ZodObject } from 'zod';
-import sendResponse from '../utils/sendResponse';
 import httpStatusCode from 'http-status-codes';
+import { ZodObject } from 'zod';
+import sendResponse from '../utils/sendResponse';
 
 const validateRequest =
   (zodSchema: ZodObject) =>
