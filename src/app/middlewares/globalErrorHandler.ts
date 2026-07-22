@@ -53,7 +53,7 @@ export const globalErrorHandler = (
       );
       errorSources = errItems;
       statusCode = httpStatusCode.BAD_REQUEST;
-      message = 'Invalid MongoDB ObjectID. Please provide a valid id';
+      message = 'Validation Error';
       break;
     }
 
@@ -99,8 +99,10 @@ export const globalErrorHandler = (
     status: false,
     statusCode,
     message,
-    errorSources: envVars.NODE_ENV == 'development' ? errorSources : null,
-    error: envVars.NODE_ENV == 'development' ? error : null,
-    stack: envVars.NODE_ENV == 'development' ? error?.stack : null,
+    ...(envVars.NODE_ENV == 'development' && !!errorSources?.length
+      ? { errorSources }
+      : {}),
+    ...(envVars.NODE_ENV == 'development' ? { error } : {}),
+    ...(envVars.NODE_ENV == 'development' ? { stack: error?.stack } : {}),
   });
 };
