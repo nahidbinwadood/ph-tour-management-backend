@@ -6,20 +6,59 @@ import { envVars } from './app/config/env';
 
 let server: Server;
 
-const PORT = envVars.PORT;
-const DB_URL=envVars.DB_URL
-
-
 const startServer = async () => {
   try {
+    const PORT = envVars.PORT;
+    const DB_URL = envVars.DB_URL;
+
+    console.info('🔄 Initializing server...');
     await mongoose.connect(DB_URL);
-    console.log('Connected to db');
+    console.info('✅ Database connection established successfully');
     server = app.listen(PORT, () => {
-      console.log(`Server is listening to ${PORT} port`);
+      console.info(`🚀 Server started successfully`);
+      console.info(`📡 Listening on port: ${PORT}`);
+      console.info(`🌍 Environment: ${process.env.NODE_ENV || 'development'}`);
     });
   } catch (error) {
-    console.log(error);
+    console.error('❌ Failed to start the server');
+    console.error(error);
+    process.exit(1);
   }
 };
 
-startServer();
+(async () => {
+  await startServer();
+  // await seedSuperAdmin();
+})();
+
+process.on('SIGTERM', () => {
+  console.log('SIGTERM signal received...Server is shutting down');
+  if (server) {
+    server.close(() => {
+      process.exit(1);
+    });
+  }
+
+  process.exit(1);
+});
+
+process.on('SIGINT', () => {
+  console.log('SIGINT signal received...Server is shutting down');
+
+  if (server) {
+    server.close(() => {
+      process.exit(1);
+    });
+  }
+  process.exit(1);
+});
+
+// unhandled error==>
+process.on('unhandledRejection', () => {
+  startServer();
+});
+
+// uncaught exception==>
+process.on('uncaughtException', () => {
+  startServer();
+});

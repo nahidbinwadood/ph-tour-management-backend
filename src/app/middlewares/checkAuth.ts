@@ -1,0 +1,34 @@
+import { NextFunction, Request, Response } from 'express';
+import { JwtPayload } from 'jsonwebtoken';
+import AppError from '../errorHelpers/AppError';
+import { verifyToken } from '../utils/jwt';
+import { envVars } from '../config/env';
+
+const checkAuth =
+  (...authRoles: string[]) =>
+  (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const token = req.headers.authorization?.replace('Bearer ', '');
+
+      if (!token) throw new AppError(403, 'No authorization token found');
+
+      const verifiedToken = verifyToken(
+        token,
+        envVars.JWT_ACCESS_SECRET
+      ) as JwtPayload;
+
+      if (!verifiedToken) throw new AppError(403, 'You are not authorized');
+
+      const verifyRole = authRoles.includes(verifiedToken?.role);
+
+      if (!verifyRole)
+        throw new AppError(401, 'You are not allowed to access this feature');
+      req.user = verifiedToken;
+
+      next();
+    } catch (error) {
+      console.log(error);
+      next(error);
+    }
+  };
+export default checkAuth;

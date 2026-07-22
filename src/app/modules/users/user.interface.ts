@@ -13,7 +13,7 @@ export enum Role {
  * google authentication
  */
 export interface IAuthProvider {
-  provider: string;
+  provider: 'google' | 'credentials';
   providerId: string;
 }
 
@@ -24,6 +24,7 @@ export enum IsActive {
 }
 
 export interface IUser {
+  id?: string;
   name: string;
   email: string;
   password?: string;

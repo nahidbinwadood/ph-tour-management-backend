@@ -3,7 +3,7 @@ interface IResponseData<T> {
   success: boolean;
   statusCode: number;
   message: string;
-  data: T;
+  data?: T;
   token?: string;
   meta?: {
     page: number;
@@ -14,7 +14,7 @@ interface IResponseData<T> {
 }
 
 const sendResponse = <T>(res: Response, responseData: IResponseData<T>) => {
-  const { statusCode, success,message , data, token, meta } = responseData;
+  const { statusCode, success, message, data, token, meta } = responseData;
   return res.status(statusCode).json({
     statusCode,
     success,

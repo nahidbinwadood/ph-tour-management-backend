@@ -1,9 +1,32 @@
 import { Router } from 'express';
+import checkAuth from '../../middlewares/checkAuth';
+import validateRequest from '../../middlewares/validateRequest';
 import { UserControllers } from './user.controller';
+import { Role } from './user.interface';
+import { updateUserSchema } from './user.schema';
 
-const userRoutes = Router();
+const router = Router();
 
-userRoutes.post('/register', UserControllers.createUser);
-userRoutes.get('/all-users', UserControllers.getAllUsers);
+// get all the users==>
+router.get(
+  '/all-users',
+  checkAuth(Role.ADMIN, Role.SUPER_ADMIN),
+  UserControllers.getAllUsers
+);
 
-export { userRoutes };
+// update user==>
+router.patch(
+  '/:id',
+  validateRequest(updateUserSchema),
+  checkAuth(...Object.values(Role)),
+  UserControllers.updateUser
+);
+
+// delete user==>
+router.delete(
+  '/:id',
+  checkAuth(Role.ADMIN, Role.SUPER_ADMIN),
+  UserControllers.deleteUser
+);
+
+export const UserRoutes = router;
