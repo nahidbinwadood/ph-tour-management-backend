@@ -2,11 +2,9 @@ import { Server } from 'http';
 
 import mongoose from 'mongoose';
 import app from './app';
-import { loadEnvVariables } from './app/config/env';
+import { envVars } from './app/config/env';
 
 let server: Server;
-
-const envVars = loadEnvVariables();
 
 const startServer = async () => {
   try {
@@ -56,13 +54,11 @@ process.on('SIGINT', () => {
 });
 
 // unhandled error==>
-process.on('unhandledRejection', (err) => {
+process.on('unhandledRejection', () => {
   startServer();
 });
 
 // uncaught exception==>
-process.on('uncaughtException', (err) => {
+process.on('uncaughtException', () => {
   startServer();
 });
-
-export default envVars;

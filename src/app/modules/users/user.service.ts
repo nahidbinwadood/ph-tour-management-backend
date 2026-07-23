@@ -1,10 +1,10 @@
 import bcrypt from 'bcryptjs';
 import httpStatusCode from 'http-status-codes';
 import { JwtPayload } from 'jsonwebtoken';
-import envVars from '../../../server';
 import AppError from '../../errorHelpers/AppError';
 import { IUser, Role } from './user.interface';
 import { User } from './user.model';
+import { envVars } from '../../config/env';
 
 // get all the users==>
 const getAllUsers = async () => {

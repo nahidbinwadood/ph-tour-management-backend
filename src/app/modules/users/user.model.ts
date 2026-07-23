@@ -1,7 +1,7 @@
 import { model, Schema } from 'mongoose';
 import { IAuthProvider, IsActive, IUser, Role } from './user.interface';
 
-const schemaTransform = {
+export const schemaTransform = {
   virtuals: true,
   transform: (_: any, ret: any) => {
     ret.id = ret._id;
