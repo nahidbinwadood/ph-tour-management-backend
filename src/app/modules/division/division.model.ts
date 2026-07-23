@@ -34,11 +34,12 @@ divisionSchema.pre('findOneAndUpdate', function () {
   const division = this.getUpdate() as Partial<IDivision>;
   const name = division?.name;
   if (name) {
-    const slug = name
-      .toLowerCase()
-      .trim()
-      .replace(/\s+/g, '-')
-      .replace(/[^a-z0-9-]/g, '')+ `-division`;
+    const slug =
+      name
+        .toLowerCase()
+        .trim()
+        .replace(/\s+/g, '-')
+        .replace(/[^a-z0-9-]/g, '') + `-division`;
     this.setUpdate({ ...division, slug });
   }
 });
