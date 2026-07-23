@@ -1,3 +1,5 @@
 node_modules 
 .env
 seedDivision.js
+seedTourType.js
+seedTours.js

@@ -1,5 +1,6 @@
 import AppError from '../../errorHelpers/AppError';
 import { Division } from '../division/division.model';
+import { tourSearchableFields } from './tour.contant';
 import { ITour } from './tour.interface';
 import { Tour, TourType } from './tour.model';
 import httpStatus from 'http-status-codes';
@@ -100,8 +101,18 @@ const createTour = async (payload: ITour) => {
 };
 
 // get all tours==>
-const getAllTours = async () => {
-  const response = await Tour.find({});
+const getAllTours = async (query: Record<string, string>) => {
+  const filter = query;
+  delete filter['search'];
+
+  const searchQuery = {
+    $or: tourSearchableFields?.map((field) => ({
+      [field]: { $regex: query.search || '', $options: 'i' },
+    })),
+  };
+
+  console.log("searchQuery",searchQuery)
+  const response = await Tour.find(searchQuery).find(filter);
   return response;
 };
 

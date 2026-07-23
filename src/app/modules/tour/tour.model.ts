@@ -22,7 +22,7 @@ const tourSchema = new Schema<ITour>(
     slug: { type: String, unique: true },
     description: { type: String },
     images: { type: [String] },
-    location: { type: [String] },
+    location: { type: String },
     costFrom: { type: Number },
     startDate: { type: Date },
     endDate: { type: Date },
