@@ -1,5 +1,7 @@
 import AppError from '../../errorHelpers/AppError';
-import { TourType } from './tour.model';
+import { Division } from '../division/division.model';
+import { ITour } from './tour.interface';
+import { Tour, TourType } from './tour.model';
 import httpStatus from 'http-status-codes';
 
 // ============= Tour Types ================
@@ -65,10 +67,104 @@ const deleteTourTypes = async (id: string) => {
 
 // ============= Tour  ================
 
+// create tour==>
+const createTour = async (payload: ITour) => {
+  const isExist = await Tour.findOne({ title: payload.title });
+
+  if (isExist) {
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      'This tour title is already exists. Please try another tour title'
+    );
+  }
+
+  const tourTypeExists = await TourType.findById(payload.tourType);
+  if (!tourTypeExists) {
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      'Tour type does not exist. Please provide a valid tour type'
+    );
+  }
+
+  const divisionExists = await Division.findById(payload.division);
+  if (!divisionExists) {
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      'Division does not exist. Please provide a valid division'
+    );
+  }
+
+  const response = await Tour.create(payload);
+
+  return response;
+};
+
+// get all tours==>
+const getAllTours = async () => {
+  const response = await Tour.find({});
+  return response;
+};
+
+// update tour ==>
+const updateTour = async (id: string, payload: Partial<ITour>) => {
+  const isExist = await Tour.findById(id);
+  if (!isExist) {
+    throw new AppError(httpStatus.NOT_FOUND, 'Tour  not found');
+  }
+
+  const duplicateTourTypes = await TourType.findOne({
+    name: payload.title,
+    _id: { $ne: id },
+  });
+
+  if (duplicateTourTypes) {
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      'A Tour type with this name is already exists, Please try another name'
+    );
+  }
+
+  const tourTypeExists = await TourType.findById(payload.tourType);
+  if (!tourTypeExists) {
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      'Tour type does not exist. Please provide a valid tour type'
+    );
+  }
+
+  const divisionExists = await Division.findById(payload.division);
+  if (!divisionExists) {
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      'Division does not exist. Please provide a valid division'
+    );
+  }
+
+  const response = await Tour.findByIdAndUpdate(id, payload, {
+    new: true,
+    runValidators: true,
+  });
+
+  return response;
+};
+
+// delete tour==>
+const deleteTour = async (id: string) => {
+  const isExist = await Tour.findById(id);
+  if (!isExist) {
+    throw new AppError(httpStatus.NOT_FOUND, 'Tour not found');
+  }
+
+  await Tour.findByIdAndDelete(id);
+};
 
 export const TourServices = {
   createTourType,
   getAllTourTypes,
   updateTourTypes,
   deleteTourTypes,
+  createTour,
+  getAllTours,
+  updateTour,
+  deleteTour,
 };

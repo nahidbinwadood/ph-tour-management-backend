@@ -2,7 +2,11 @@ import { Router } from 'express';
 import checkAuth from '../../middlewares/checkAuth';
 import { Role } from '../users/user.interface';
 import validateRequest from '../../middlewares/validateRequest';
-import { tourTypeSchema } from './tour.schema';
+import {
+  createTourSchema,
+  tourTypeSchema,
+  updateTourSchema,
+} from './tour.schema';
 import { TourControllers } from './tour.controller';
 
 const router = Router();
@@ -33,5 +37,31 @@ router.delete(
 );
 
 // ==============Tour ===================
+
+router.post(
+  '/create',
+  checkAuth(Role.ADMIN, Role.SUPER_ADMIN),
+  validateRequest(createTourSchema),
+  TourControllers.createTour
+);
+
+router.get(
+  '/',
+  checkAuth(Role.ADMIN, Role.SUPER_ADMIN),
+  TourControllers.getAllTours
+);
+
+router.patch(
+  '/:id',
+  checkAuth(Role.ADMIN, Role.SUPER_ADMIN),
+  validateRequest(updateTourSchema),
+  TourControllers.updateTour
+);
+
+router.delete(
+  '/:id',
+  checkAuth(Role.ADMIN, Role.SUPER_ADMIN),
+  TourControllers.deleteTour
+);
 
 export const TourRoutes = router;
