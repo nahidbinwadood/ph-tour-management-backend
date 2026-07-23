@@ -21,7 +21,7 @@ export const globalErrorHandler = (
   switch (true) {
     // App Error==>
     case error instanceof AppError: {
-      statusCode = httpStatusCode.BAD_GATEWAY;
+      statusCode = error.statusCode;
       message = error?.message;
       break;
     }
