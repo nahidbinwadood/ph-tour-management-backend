@@ -14,6 +14,13 @@ router.get(
   UserControllers.getAllUsers
 );
 
+// get single user data==>
+router.get(
+  '/:id',
+  checkAuth(...Object.values(Role)),
+  UserControllers.getSingleUser
+);
+
 // update user==>
 router.patch(
   '/:id',

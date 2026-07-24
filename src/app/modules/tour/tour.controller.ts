@@ -31,6 +31,23 @@ const getAllTourTypes = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+// single tour type==>
+const getSingleTourType = catchAsync(async (req: Request, res: Response) => {
+  const id = req.params.id;
+
+  if (!id) {
+    throw new AppError(httpStatus.NOT_FOUND, 'Tour type is missing');
+  }
+  const response = await TourServices.getSingleTourType(id);
+
+  sendResponse(res, {
+    success: true,
+    statusCode: httpStatus.OK,
+    message: 'Tour types data fetched successfully',
+    data: response,
+  });
+});
+
 // update tour types==>
 const updateTourTypes = catchAsync(async (req: Request, res: Response) => {
   const id = req.params.id;
@@ -77,6 +94,7 @@ const createTour = catchAsync(async (req: Request, res: Response) => {
 // get all tours==>
 const getAllTours = catchAsync(async (req: Request, res: Response) => {
   const query = req.query || '';
+
   const response = await TourServices.getAllTours(
     query as Record<string, string>
   );
@@ -85,6 +103,26 @@ const getAllTours = catchAsync(async (req: Request, res: Response) => {
     success: true,
     statusCode: httpStatus.OK,
     message: 'All tours data fetched successfully',
+    data: response,
+  });
+});
+
+// get single tour==>
+const getSingleTour = catchAsync(async (req: Request, res: Response) => {
+  const slug = req.params.slug;
+  if (!slug) {
+    throw new AppError(httpStatus.NOT_FOUND, 'Slug is missing');
+  }
+
+  const response = await TourServices.getSingleTour(slug);
+
+  if (!response) {
+    throw new AppError(httpStatus.BAD_REQUEST, 'Invalid slug provided');
+  }
+  sendResponse(res, {
+    success: true,
+    statusCode: httpStatus.OK,
+    message: 'Tour data fetched successfully',
     data: response,
   });
 });
@@ -122,10 +160,12 @@ const deleteTour = catchAsync(async (req: Request, res: Response) => {
 export const TourControllers = {
   createTourTypes,
   getAllTourTypes,
+  getSingleTourType,
   updateTourTypes,
   deleteTourTypes,
   createTour,
   getAllTours,
+  getSingleTour,
   updateTour,
   deleteTour,
 };

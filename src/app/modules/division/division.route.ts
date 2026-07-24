@@ -16,18 +16,10 @@ router.post(
 );
 
 // get all division==>
-router.get(
-  '/',
-  checkAuth(Role.ADMIN, Role.SUPER_ADMIN),
-  DivisionControllers.getAllDivisions
-);
+router.get('/', DivisionControllers.getAllDivisions);
 
 // get single division==>
-router.get(
-  '/:id',
-  checkAuth(Role.ADMIN, Role.SUPER_ADMIN),
-  DivisionControllers.getSingleDivision
-);
+router.get('/:slug', DivisionControllers.getSingleDivision);
 
 // update division==>
 router.patch(
