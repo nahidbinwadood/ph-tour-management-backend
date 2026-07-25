@@ -18,6 +18,12 @@ interface IEnvConfig {
   GOOGLE_CALLBACK_URL: string;
   EXPRESS_SESSION_SECRET: string;
   FRONTEND_URL: string;
+  STORE_ID: string;
+  STORE_PASS: string;
+  SSL_SUCCESS_BACKEND_URL: string;
+  SSL_FAIL_BACKEND_URL: string;
+  SSL_CANCEL_BACKEND_URL: string;
+  SSL_PAYMENT_API: string;
 }
 
 const loadEnvVariables = (): IEnvConfig => {
@@ -36,6 +42,12 @@ const loadEnvVariables = (): IEnvConfig => {
     'GOOGLE_CALLBACK_URL',
     'EXPRESS_SESSION_SECRET',
     'FRONTEND_URL',
+    'STORE_ID',
+    'STORE_PASS',
+    'SSL_SUCCESS_BACKEND_URL',
+    'SSL_FAIL_BACKEND_URL',
+    'SSL_CANCEL_BACKEND_URL',
+    'SSL_PAYMENT_API',
   ];
 
   requiredVariables.forEach((key: string) => {
@@ -59,6 +71,12 @@ const loadEnvVariables = (): IEnvConfig => {
     GOOGLE_CALLBACK_URL: process.env.GOOGLE_CALLBACK_URL as string,
     EXPRESS_SESSION_SECRET: process.env.EXPRESS_SESSION_SECRET as string,
     FRONTEND_URL: process.env.FRONTEND_URL as string,
+    STORE_ID: process.env.STORE_ID as string,
+    STORE_PASS: process.env.STORE_PASS as string,
+    SSL_SUCCESS_BACKEND_URL: process.env.SSL_SUCCESS_BACKEND_URL as string,
+    SSL_FAIL_BACKEND_URL: process.env.SSL_FAIL_BACKEND_URL as string,
+    SSL_CANCEL_BACKEND_URL: process.env.SSL_CANCEL_BACKEND_URL as string,
+    SSL_PAYMENT_API: process.env.SSL_PAYMENT_API as string,
   };
 };
 
