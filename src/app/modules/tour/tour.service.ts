@@ -1,10 +1,10 @@
 import httpStatus from 'http-status-codes';
 import AppError from '../../errorHelpers/AppError';
-import { QueryBuilder } from '../../utils/queryBuilder';
 import { Division } from '../division/division.model';
 import { tourSearchableFields } from './tour.contant';
 import { ITour } from './tour.interface';
 import { Tour, TourType } from './tour.model';
+import { QueryBuilder } from '../../utils/QueryBuilder';
 
 // ============= Tour Types ================
 

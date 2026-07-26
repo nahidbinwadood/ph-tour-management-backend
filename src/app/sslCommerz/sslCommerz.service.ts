@@ -50,7 +50,7 @@ const sslPaymentInit = async (payload: ISSLCommerz) => {
     });
     return response.data;
   } catch (error: any) {
-    console.log(error, 'Payment Error Occured');
+    console.log(error, 'Payment Error Occurred');
     throw new AppError(httpStatus.BAD_REQUEST, error.message);
   }
 };

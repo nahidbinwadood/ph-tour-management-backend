@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import AppError from '../../errorHelpers/AppError';
 import { SSLService } from '../../sslCommerz/sslCommerz.service';
+import { QueryBuilder } from '../../utils/QueryBuilder';
 import { BOOKING_STATUS } from '../booking/booking.interface';
 import { Booking } from '../booking/booking.model';
 import { PAYMENT_STATUS } from './payment.interface';
@@ -127,8 +128,8 @@ const failedPayment = async (transactionId: string) => {
     session.endSession();
 
     return {
-      success: true,
-      message: 'Payment completed successfully',
+      success: false,
+      message: 'Payment failed',
     };
   } catch (error) {
     await session.abortTransaction();
@@ -177,8 +178,8 @@ const cancelPayment = async (transactionId: string) => {
     session.endSession();
 
     return {
-      success: true,
-      message: 'Payment completed successfully',
+      success: false,
+      message: 'Payment cancelled!',
     };
   } catch (error) {
     await session.abortTransaction();
@@ -187,9 +188,23 @@ const cancelPayment = async (transactionId: string) => {
   }
 };
 
+// get all payments==>
+const getAllPayments = async (query: Record<string, string>) => {
+  const queryBuilder = new QueryBuilder(Booking.find(), query);
+
+  const payment = queryBuilder.fields().filter().paginate();
+
+  const [data, meta] = await Promise.all([
+    payment.build().populate('user', 'name email address phone role'),
+    queryBuilder.getMeta(),
+  ]);
+  return { data, meta };
+};
+
 export const PaymentServices = {
   initPayment,
   successPayment,
   failedPayment,
   cancelPayment,
+  getAllPayments,
 };

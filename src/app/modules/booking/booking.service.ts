@@ -7,6 +7,7 @@ import { User } from '../users/user.model';
 import { Payment } from '../payment/payment.model';
 import { PAYMENT_STATUS } from '../payment/payment.interface';
 import { SSLService } from '../../sslCommerz/sslCommerz.service';
+import { QueryBuilder } from '../../utils/QueryBuilder';
 
 const getTransactionId = (userId: string) => {
   return `tran_${Date.now()}_${userId}_${Math.floor(Math.random() * 10)}`;
@@ -97,6 +98,11 @@ const createBooking = async (payload: Partial<IBooking>, userId: string) => {
       address: userData?.address,
     });
 
+    // throw error if there is no gateway url==>
+    if (!sslPayment.GatewayPageURL) {
+      throw new AppError(httpStatus.BAD_REQUEST, 'Failed to proceed payment');
+    }
+
     // commit the session==>
     await session.commitTransaction();
     session.endSession();
@@ -114,23 +120,81 @@ const createBooking = async (payload: Partial<IBooking>, userId: string) => {
 };
 
 // get all bookings==>
-const getAllBookings = async () => {
-  return {};
+const getAllBookings = async (query: Record<string, string>) => {
+  const queryBuilder = new QueryBuilder(
+    Booking.find()
+      .populate('user', 'name email role phone address')
+      .populate('tour', 'title description location costFrom maxGuest'),
+    query
+  );
+
+  const bookings = queryBuilder.sort().fields().paginate().filter();
+
+  const [data, meta] = await Promise.all([
+    bookings.build(),
+    queryBuilder.getMeta(),
+  ]);
+
+  return {
+    data,
+    meta,
+  };
 };
 
 // get my bookings==>
-const getMyBookings = async () => {
-  return {};
+const getMyBookings = async (userId: string, query: Record<string, string>) => {
+  const queryBuilder = new QueryBuilder(
+    Booking.find({ user: userId })
+      .populate('user', 'name email role phone address')
+      .populate('tour', 'title description location costFrom maxGuest'),
+    query
+  );
+
+  const tour = queryBuilder.sort().fields().filter().paginate();
+
+  const [data, meta] = await Promise.all([
+    tour.build(),
+    queryBuilder.getMeta(),
+  ]);
+
+  return { data, meta };
 };
 
 // get single booking==>
-const getSingleBooking = async () => {
-  return {};
+const getSingleBooking = async (bookingId: string) => {
+  const response = await Booking.findById(bookingId)
+    .populate('user', 'name email role phone address')
+    .populate('tour', 'title description location costFrom maxGuest');
+
+  // throw error if the booking not found==>
+  if (!response) {
+    throw new AppError(httpStatus.NOT_FOUND, 'Booking not found');
+  }
+  return response;
 };
 
 // get single booking==>
-const updateBookingStatus = async () => {
-  return {};
+const updateBookingStatus = async (
+  bookingId: string,
+  payload: Partial<IBooking>
+) => {
+  const response = await Booking.findByIdAndUpdate(
+    bookingId,
+    {
+      status: payload.status,
+    },
+    {
+      new: true,
+      runValidators: true,
+    }
+  )
+    .populate('user', 'name email role phone address')
+    .populate('tour', 'title description location costFrom maxGuest');
+  // throw error if the booking not found==>
+  if (!response) {
+    throw new AppError(httpStatus.NOT_FOUND, 'Booking not found');
+  }
+  return response;
 };
 
 export const BookingServices = {

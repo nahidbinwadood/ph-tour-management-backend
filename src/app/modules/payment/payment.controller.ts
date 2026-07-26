@@ -57,7 +57,7 @@ const failedPayment = catchAsync(async (req: Request, res: Response) => {
 
   const response = await PaymentServices.failedPayment(transactionId as string);
 
-  if (response.success) {
+  if (!response.success) {
     res.redirect(
       `${envVars.SSL_FAIL_FRONTEND_URL}?transactionId=${transactionId}&message=${response.message}&amount=${amount}&status=${status}`
     );
@@ -76,11 +76,24 @@ const cancelPayment = catchAsync(async (req: Request, res: Response) => {
 
   const response = await PaymentServices.cancelPayment(transactionId as string);
 
-  if (response.success) {
+  if (!response.success) {
     res.redirect(
       `${envVars.SSL_CANCEL_FRONTEND_URL}?transactionId=${transactionId}&message=${response.message}&amount=${amount}&status=${status}`
     );
   }
+});
+
+// get all payments==>
+const getAllPayments = catchAsync(async (req: Request, res: Response) => {
+  const response = await PaymentServices.getAllPayments(
+    req.query as Record<string, string>
+  );
+  sendResponse(res, {
+    success: true,
+    statusCode: httpStatus.OK,
+    message: 'All payments data fetched successfully',
+    data: response,
+  });
 });
 
 export const PaymentControllers = {
@@ -88,4 +101,5 @@ export const PaymentControllers = {
   successPayment,
   failedPayment,
   cancelPayment,
+  getAllPayments,
 };

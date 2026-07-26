@@ -22,7 +22,7 @@ const checkAuth =
       const verifyRole = authRoles.includes(verifiedToken?.role);
 
       if (!verifyRole)
-        throw new AppError(401, 'You are not allowed to access this feature');
+        throw new AppError(401, 'You are not authorized to access this feature');
       req.user = verifiedToken;
 
       next();
