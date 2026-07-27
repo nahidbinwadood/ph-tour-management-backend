@@ -6,8 +6,9 @@ import jwt from 'jsonwebtoken';
 import { envVars } from '../config/env';
 import AppError from '../errorHelpers/AppError';
 import { IErrorSource } from '../interface/error.type';
+import { deleteCloudinaryImage } from '../config/cloudinary.config';
 
-export const globalErrorHandler = (
+export const globalErrorHandler = async (
   error: any,
   req: Request,
   res: Response,
@@ -17,6 +18,18 @@ export const globalErrorHandler = (
   let message = `Something went wrong`;
 
   let errorSources: IErrorSource[] = [];
+
+  // delete from the cloudinary if any error occurs(Single)==>
+  if (req.file) {
+    await deleteCloudinaryImage(req.file.path);
+  }
+
+  // delete from the cloudinary if any error occurs(Multiple)==>
+  if (req.files && Array.isArray(req.files) && !!req.files.length) {
+    await Promise.all(
+      req.files.map((item) => deleteCloudinaryImage(item?.path))
+    );
+  }
 
   switch (true) {
     // App Error==>

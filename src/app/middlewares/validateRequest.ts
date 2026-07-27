@@ -6,6 +6,9 @@ import sendResponse from '../utils/sendResponse';
 const validateRequest =
   (zodSchema: ZodObject) =>
   async (req: Request, res: Response, next: NextFunction) => {
+    if (req.body.data) {
+      req.body = JSON.parse(req.body.data);
+    }
     // send error if the request body is empty==>
     if (!req.body || Object.keys(req.body).length === 0) {
       sendResponse(res, {
@@ -15,9 +18,6 @@ const validateRequest =
       });
     }
 
-    if (req.body.data) {
-      req.body = JSON.parse(req.body.data);
-    }
     req.body = await zodSchema.parseAsync(req.body);
     next();
   };

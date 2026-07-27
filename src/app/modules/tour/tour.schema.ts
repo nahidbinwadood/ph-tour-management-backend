@@ -88,4 +88,5 @@ export const updateTourSchema = z.object({
   minAge: z.coerce.number({ message: 'Min Age is required' }).optional(),
   division: objectId.optional(),
   tourType: objectId.optional(),
+  deletedFiles: z.string().optional(),
 });

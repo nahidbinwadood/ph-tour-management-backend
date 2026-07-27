@@ -8,6 +8,7 @@ import {
   tourTypeSchema,
   updateTourSchema,
 } from './tour.schema';
+import { multerUpload } from '../../config/multer.config';
 
 const router = Router();
 
@@ -38,6 +39,7 @@ router.delete(
 router.post(
   '/create',
   checkAuth(Role.ADMIN, Role.SUPER_ADMIN),
+  multerUpload.array('files'),
   validateRequest(createTourSchema),
   TourControllers.createTour
 );
@@ -48,6 +50,7 @@ router.get('/:slug', TourControllers.getSingleTour);
 router.patch(
   '/:id',
   checkAuth(Role.ADMIN, Role.SUPER_ADMIN),
+  multerUpload.array('files'),
   validateRequest(updateTourSchema),
   TourControllers.updateTour
 );
