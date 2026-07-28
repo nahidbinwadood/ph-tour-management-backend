@@ -183,18 +183,45 @@ const updateTour = async (id: string, payload: Partial<ITour>) => {
 
   try {
     // if user add new images==>
-    payload.images =
-      isExist?.images &&
-      !!isExist?.images?.length &&
+    if (
       payload?.images &&
-      !!payload?.images?.length
-        ? [...isExist.images, ...payload.images]
-        : isExist?.images || [];
+      !!payload?.images?.length &&
+      isExist?.images &&
+      !!isExist?.images?.length
+    ) {
+      payload.images = [...isExist.images, ...payload.images];
+    }
 
     // if user only delete images==>
-    payload.images = payload?.deletedFiles?.length
-      ? isExist?.images?.filter((url) => !payload?.deletedFiles?.includes(url))
-      : isExist?.images || [];
+    if (
+      payload?.deletedFiles &&
+      !!payload?.deletedFiles?.length &&
+      !payload.images
+    ) {
+      payload.images = isExist?.images?.filter(
+        (url) => !payload?.deletedFiles?.includes(url)
+      );
+    }
+
+    // if the user upload image and delete image at the same time==>
+    if (
+      payload?.images &&
+      !!payload?.images &&
+      payload?.deletedFiles &&
+      !!payload.deletedFiles.length
+    ) {
+      const restDbImages =
+        isExist?.images?.filter(
+          (url) => !payload.deletedFiles?.includes(url)
+        ) || [];
+
+      const updatedImagesUrls =
+        payload.images
+          ?.filter((url) => !payload.deletedFiles?.includes(url))
+          .filter((url) => !restDbImages.includes(url)) || [];
+
+      payload.images = [...restDbImages, ...updatedImagesUrls];
+    }
 
     const response = await Tour.findByIdAndUpdate(id, payload, {
       new: true,
