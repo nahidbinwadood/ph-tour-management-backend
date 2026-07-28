@@ -60,9 +60,25 @@ const updateUser = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+// get me data==>
+const getMe = catchAsync(async (req: Request, res: Response) => {
+  const { userId } = req.user as JwtPayload;
+  const response = await UserServices.getMe(userId);
+
+  console.log({ response });
+
+  sendResponse(res, {
+    success: true,
+    statusCode: httpStatusCode.OK,
+    message: 'User data fetched successfully',
+    data: response,
+  });
+});
+
 export const UserControllers = {
   getAllUsers,
   getSingleUser,
   deleteUser,
   updateUser,
+  getMe,
 };
