@@ -141,9 +141,104 @@ const resetPassword = async (
   }
 };
 
+// change password==>
+const changePassword = async (
+  payload: { oldPassword: string; newPassword: string },
+  userId: string
+) => {
+  // find user==>
+  const user = await User.findById(userId);
+
+  // throw error if the user is not exist==>
+  if (!user) {
+    throw new AppError(httpStatusCode.NOT_FOUND, 'User not found');
+  }
+
+  // throw error if user don't have any password set==>
+  if (!user.password) {
+    throw new AppError(
+      httpStatusCode.BAD_REQUEST,
+      'Please set your password first to do this action'
+    );
+  }
+  const isPasswordMatched = await bcrypt.compare(
+    payload.oldPassword,
+    user.password
+  );
+
+  // Throw error if the old password is incorrect==>
+  if (!isPasswordMatched) {
+    throw new AppError(httpStatusCode.BAD_REQUEST, 'Old password is incorrect');
+  }
+
+  const newPasswordIsSameAsOldPassword = await bcrypt.compare(
+    payload.newPassword,
+    user.password
+  );
+
+  // throw error if the new password is same as old password==>
+  if (newPasswordIsSameAsOldPassword) {
+    throw new AppError(
+      httpStatusCode.BAD_REQUEST,
+      'New password cannot be same as old password'
+    );
+  }
+
+  user.password = await bcrypt.hash(
+    payload.newPassword,
+    Number(envVars.BCRYPT_SALT_ROUND)
+  );
+
+  await user.save();
+};
+
+// set password==>
+const setPassword = async (payload: { password: string }, userId: string) => {
+  const user = await User.findById(userId);
+
+  // throw error if the user not found==>
+  if (!user) {
+    throw new AppError(httpStatusCode.NOT_FOUND, 'User not found');
+  }
+
+  // throw error if the user set password already==>
+  if (user.password) {
+    throw new AppError(
+      httpStatusCode.BAD_REQUEST,
+      'The password already set.You can change your password'
+    );
+  }
+
+  const hashedPassword = await bcrypt.hash(
+    payload.password,
+    Number(envVars.BCRYPT_SALT_ROUND)
+  );
+
+  user.password = hashedPassword;
+
+  const isGoogleUser = user?.auths?.some(
+    (providerObj) => providerObj.provider === 'google'
+  );
+
+  // add credentials in the auths if the user is google credentials user==>
+  if (isGoogleUser) {
+    user.auths = [
+      ...(user?.auths as IAuthProvider[]),
+      {
+        provider: 'credentials',
+        providerId: user?.email,
+      },
+    ];
+  }
+
+  await user.save();
+};
+
 export const AuthServices = {
   credentialsLogin,
   createUser,
   getNewAccessToken,
   resetPassword,
+  setPassword,
+  changePassword,
 };

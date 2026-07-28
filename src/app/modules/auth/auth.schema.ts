@@ -68,3 +68,11 @@ export const changePasswordSchema = z.object({
     )
     .regex(/^(?=.*\d)/, 'New Password must contain at least 1 number.'),
 });
+
+export const setPasswordSchema = z.object({
+  password: z
+    .string('Password is required')
+    .min(8, 'Password must be 8 characters long')
+    .regex(/^(?=.*[A-Z])/, 'Password must contain at least 1 uppercase letter')
+    .regex(/^(?=.*\d)/, 'Password must contain at least 1 number.'),
+});

@@ -8,10 +8,7 @@ import { Payment } from '../payment/payment.model';
 import { PAYMENT_STATUS } from '../payment/payment.interface';
 import { SSLService } from '../../sslCommerz/sslCommerz.service';
 import { QueryBuilder } from '../../utils/QueryBuilder';
-
-const getTransactionId = (userId: string) => {
-  return `tran_${Date.now()}_${userId}_${Math.floor(Math.random() * 10)}`;
-};
+import { getTransactionId } from '../../utils/getTransactionId';
 
 // create booking==>
 const createBooking = async (payload: Partial<IBooking>, userId: string) => {

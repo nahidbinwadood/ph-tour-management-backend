@@ -10,6 +10,7 @@ import { JwtPayload } from 'jsonwebtoken';
 import { createUserTokens } from '../../utils/jwt';
 import { envVars } from '../../config/env';
 import passport from 'passport';
+import { HttpStatusCode } from 'axios';
 
 // create user==>
 const createUser = catchAsync(async (req: Request, res: Response) => {
@@ -39,7 +40,8 @@ const credentialsLogin = catchAsync(
 
       const userTokens = createUserTokens(user);
 
-      delete user.toObject().password;
+      const userObj = user.toObject();
+      delete userObj.password;
 
       setAuthCookie(res, userTokens);
 
@@ -51,7 +53,7 @@ const credentialsLogin = catchAsync(
           tokens: {
             ...userTokens,
           },
-          user: user,
+          user: userObj,
         },
       });
     })(req, res, next);
@@ -91,6 +93,20 @@ const logout = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+// change password==>
+const changePassword = catchAsync(async (req: Request, res: Response) => {
+  const { userId } = req.user as JwtPayload;
+
+  const response = await AuthServices.changePassword(req.body, userId);
+
+  sendResponse(res, {
+    success: true,
+    statusCode: httpStatusCode.OK,
+    message: 'Password changed successfully',
+    data: response,
+  });
+});
+
 // reset password==>
 const resetPassword = catchAsync(async (req: Request, res: Response) => {
   const decodedToken = req.user;
@@ -104,6 +120,19 @@ const resetPassword = catchAsync(async (req: Request, res: Response) => {
     success: true,
     statusCode: httpStatusCode.OK,
     message: 'Password reset completed successfully',
+    data: response,
+  });
+});
+
+// set password==>
+const setPassword = catchAsync(async (req: Request, res: Response) => {
+  const { userId } = req.user as JwtPayload;
+  const response = await AuthServices.setPassword(req.body, userId);
+
+  sendResponse(res, {
+    success: true,
+    statusCode: HttpStatusCode.Ok,
+    message: 'Password set successfully',
     data: response,
   });
 });
@@ -135,5 +164,7 @@ export const AuthControllers = {
   getNewAccessToken,
   logout,
   resetPassword,
+  changePassword,
+  setPassword,
   googleCallback,
 };

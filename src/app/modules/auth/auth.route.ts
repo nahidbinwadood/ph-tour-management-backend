@@ -5,6 +5,7 @@ import {
   changePasswordSchema,
   createUserSchema,
   loginSchema,
+  setPasswordSchema,
 } from './auth.schema';
 import checkAuth from '../../middlewares/checkAuth';
 import { Role } from '../users/user.interface';
@@ -32,12 +33,28 @@ router.post('/refresh-token', AuthControllers.getNewAccessToken);
 // logout==>
 router.post('/logout', AuthControllers.logout);
 
+// change password==>
+router.post(
+  '/change-password',
+  checkAuth(...Object.values(Role)),
+  validateRequest(changePasswordSchema),
+  AuthControllers.changePassword
+);
+
 // reset password==>
 router.post(
   '/reset-password',
   validateRequest(changePasswordSchema),
   checkAuth(...Object.values(Role)),
   AuthControllers.resetPassword
+);
+
+// set password==>
+router.post(
+  '/set-password',
+  checkAuth(...Object.values(Role)),
+  validateRequest(setPasswordSchema),
+  AuthControllers.setPassword
 );
 
 // google verify==>
