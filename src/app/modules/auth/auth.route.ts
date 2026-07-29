@@ -4,7 +4,9 @@ import validateRequest from '../../middlewares/validateRequest';
 import {
   changePasswordSchema,
   createUserSchema,
+  forgetPasswordSchema,
   loginSchema,
+  resetPasswordSchema,
   setPasswordSchema,
 } from './auth.schema';
 import checkAuth from '../../middlewares/checkAuth';
@@ -42,20 +44,27 @@ router.post(
   AuthControllers.changePassword
 );
 
-// reset password==>
-router.post(
-  '/reset-password',
-  validateRequest(changePasswordSchema),
-  checkAuth(...Object.values(Role)),
-  AuthControllers.resetPassword
-);
-
 // set password==>
 router.post(
   '/set-password',
   checkAuth(...Object.values(Role)),
   validateRequest(setPasswordSchema),
   AuthControllers.setPassword
+);
+
+// forget password==>
+router.post(
+  '/forget-password',
+  validateRequest(forgetPasswordSchema),
+  AuthControllers.forgetPassword
+);
+
+// reset password==>
+router.post(
+  '/reset-password',
+  validateRequest(resetPasswordSchema),
+  checkAuth(...Object.values(Role)),
+  AuthControllers.resetPassword
 );
 
 // google verify==>
