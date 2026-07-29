@@ -10,6 +10,7 @@ import {
 import checkAuth from '../../middlewares/checkAuth';
 import { Role } from '../users/user.interface';
 import passport from 'passport';
+import { envVars } from '../../config/env';
 
 const router = Router();
 
@@ -69,7 +70,9 @@ router.get('/google', (req: Request, res: Response, next: NextFunction) => {
 // google redirect==>
 router.get(
   '/google/callback',
-  passport.authenticate('google', { failureRedirect: '/' }),
+  passport.authenticate('google', {
+    failureRedirect: `${envVars.FRONTEND_URL}/login?error=Something_went_wrong.Please_contact_support`,
+  }),
   AuthControllers.googleCallback
 );
 
