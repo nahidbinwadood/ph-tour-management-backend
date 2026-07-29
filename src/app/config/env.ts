@@ -50,6 +50,7 @@ const loadEnvVariables = (): IEnvConfig => {
     'SUPER_ADMIN_EMAIL',
     'SUPER_ADMIN_PASSWORD',
     'GOOGLE_CLIENT_SECRET',
+    'GOOGLE_CLIENT_ID',
     'GOOGLE_CALLBACK_URL',
     'EXPRESS_SESSION_SECRET',
     'FRONTEND_URL',

@@ -13,7 +13,7 @@ import router from './app/routes';
 const app: Application = express();
 
 // parser==>
-app.use(cors());
+app.use(cors({ origin: envVars.FRONTEND_URL, credentials: true }));
 app.disable('x-powered-by')
 app.use(
   expressSession({

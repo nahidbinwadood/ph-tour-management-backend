@@ -31,34 +31,33 @@ const startServer = async () => {
   // await seedSuperAdmin();
 })();
 
-process.on('SIGTERM', () => {
-  console.log('SIGTERM signal received...Server is shutting down');
+// graceful shutdown: close server, then exit clean==>
+const gracefulShutdown = (signal: string) => {
+  console.log(`${signal} signal received...Server is shutting down`);
   if (server) {
     server.close(() => {
-      process.exit(1);
+      process.exit(0);
     });
+  } else {
+    process.exit(0);
   }
+};
 
-  process.exit(1);
-});
+process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
+process.on('SIGINT', () => gracefulShutdown('SIGINT'));
 
-process.on('SIGINT', () => {
-  console.log('SIGINT signal received...Server is shutting down');
-
+// unhandled error / uncaught exception: log and exit(1), let supervisor restart==>
+// ponytail: no in-process restart — state is corrupt after uncaughtException; pm2/docker restarts cleanly
+process.on('unhandledRejection', (reason) => {
+  console.error('❌ Unhandled Rejection detected, shutting down', reason);
   if (server) {
-    server.close(() => {
-      process.exit(1);
-    });
+    server.close(() => process.exit(1));
+  } else {
+    process.exit(1);
   }
+});
+
+process.on('uncaughtException', (error) => {
+  console.error('❌ Uncaught Exception detected, shutting down', error);
   process.exit(1);
-});
-
-// unhandled error==>
-process.on('unhandledRejection', () => {
-  startServer();
-});
-
-// uncaught exception==>
-process.on('uncaughtException', () => {
-  startServer();
 });
