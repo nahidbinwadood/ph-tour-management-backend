@@ -3,6 +3,8 @@ import httpStatusCode from 'http-status-codes';
 import { catchAsync } from '../../utils/catchAsync';
 import sendResponse from '../../utils/sendResponse';
 import { DivisionServices } from './division.service';
+import AppError from '../../errorHelpers/AppError';
+import httpStatus from 'http-status-codes';
 
 // create division==>
 const createDivision = catchAsync(async (req: Request, res: Response) => {
@@ -31,9 +33,12 @@ const getAllDivisions = catchAsync(async (req: Request, res: Response) => {
 
 // get single division==>
 const getSingleDivision = catchAsync(async (req: Request, res: Response) => {
-  const id = req.params.id;
+  const slug = req.params.slug;
 
-  const response = await DivisionServices.getSingleDivision(id);
+  if (!slug) {
+    throw new AppError(httpStatus.NOT_FOUND, 'Division slug is missing');
+  }
+  const response = await DivisionServices.getSingleDivision(slug);
 
   sendResponse(res, {
     success: true,

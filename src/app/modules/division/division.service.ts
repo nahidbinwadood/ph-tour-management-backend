@@ -25,8 +25,8 @@ const getAllDivisions = async () => {
 };
 
 // get single division==>
-const getSingleDivision = async (id: string) => {
-  const isExist = await Division.findById(id);
+const getSingleDivision = async (slug: string) => {
+  const isExist = await Division.findOne({ slug });
   if (!isExist) {
     throw new AppError(httpStatusCode.NOT_FOUND, 'Division not found');
   }

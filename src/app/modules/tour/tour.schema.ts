@@ -33,6 +33,14 @@ export const createTourSchema = z.object({
   startDate: z.coerce.date({ message: 'Start Date is required' }).optional(),
   endDate: z.coerce.date({ message: 'End Date is required' }).optional(),
   included: z.array(z.string().min(1, 'Tour Include is required')).optional(),
+  departureLocation: z
+    .string()
+    .max(100, 'Departure location cannot exceed 100 characters')
+    .optional(),
+  arrivalLocation: z
+    .string()
+    .max(100, 'Arrival location cannot exceed 100 characters')
+    .optional(),
   excluded: z.array(z.string().min(1, 'Tour Exclude is required')).optional(),
   amenities: z
     .array(z.string().min(1, 'Tour Amenities is required'))
@@ -48,7 +56,8 @@ export const updateTourSchema = z.object({
   title: z
     .string()
     .min(1, 'Tour title is required')
-    .max(100, 'Tour title cannot exceed 100 characters').optional(),
+    .max(100, 'Tour title cannot exceed 100 characters')
+    .optional(),
   description: z
     .string()
     .max(200, 'Tour description cannot exceed 200 characters')
@@ -61,6 +70,14 @@ export const updateTourSchema = z.object({
   costFrom: z.coerce.number({ message: 'Cost from is required' }).optional(),
   startDate: z.date({ message: 'Start Date is required' }).optional(),
   endDate: z.date({ message: 'End Date is required' }).optional(),
+  departureLocation: z
+    .string()
+    .max(100, 'Departure location cannot exceed 100 characters')
+    .optional(),
+  arrivalLocation: z
+    .string()
+    .max(100, 'Arrival location cannot exceed 100 characters')
+    .optional(),
   included: z.array(z.string().min(1, 'Tour Include is required')).optional(),
   excluded: z.array(z.string().min(1, 'Tour Exclude is required')).optional(),
   amenities: z
