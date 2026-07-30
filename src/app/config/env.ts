@@ -30,6 +30,11 @@ interface IEnvConfig {
   CLOUDINARY_CLOUD_NAME: string;
   CLOUDINARY_API_KEY: string;
   CLOUDINARY_API_SECRET: string;
+  SMTP_HOST: string;
+  SMTP_PORT: string;
+  SMTP_USER: string;
+  SMTP_PASS: string;
+  SMTP_FROM: string;
   REDIS_USERNAME: string;
   REDIS_PASSWORD: string;
   REDIS_HOST: string;
@@ -49,6 +54,7 @@ const loadEnvVariables = (): IEnvConfig => {
     'SUPER_ADMIN_EMAIL',
     'SUPER_ADMIN_PASSWORD',
     'GOOGLE_CLIENT_SECRET',
+    'GOOGLE_CLIENT_ID',
     'GOOGLE_CALLBACK_URL',
     'EXPRESS_SESSION_SECRET',
     'FRONTEND_URL',
@@ -68,6 +74,11 @@ const loadEnvVariables = (): IEnvConfig => {
     'REDIS_PASSWORD',
     'REDIS_HOST',
     'REDIS_PORT',
+    'SMTP_HOST',
+    'SMTP_PORT',
+    'SMTP_USER',
+    'SMTP_PASS',
+    'SMTP_FROM',
   ];
 
   requiredVariables.forEach((key: string) => {
@@ -103,10 +114,6 @@ const loadEnvVariables = (): IEnvConfig => {
     CLOUDINARY_CLOUD_NAME: process.env.CLOUDINARY_CLOUD_NAME as string,
     CLOUDINARY_API_KEY: process.env.CLOUDINARY_API_KEY as string,
     CLOUDINARY_API_SECRET: process.env.CLOUDINARY_API_SECRET as string,
-    REDIS_USERNAME: process.env.REDIS_USERNAME as string,
-    REDIS_PASSWORD: process.env.REDIS_PASSWORD as string,
-    REDIS_HOST: process.env.REDIS_HOST as string,
-    REDIS_PORT: process.env.REDIS_PORT as string,
   };
 };
 

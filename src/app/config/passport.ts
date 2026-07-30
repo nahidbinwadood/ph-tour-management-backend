@@ -1,15 +1,15 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+import bcryptjs from 'bcryptjs';
 import passport from 'passport';
 import {
   Strategy as GoogleStrategy,
   Profile,
   VerifyCallback,
 } from 'passport-google-oauth20';
-import { User } from '../modules/users/user.model';
-import { Role } from '../modules/users/user.interface';
-import { envVars } from './env';
 import { Strategy as LocalStrategy } from 'passport-local';
-import bcryptjs from 'bcryptjs';
+import { IsActive, Role } from '../modules/users/user.interface';
+import { User } from '../modules/users/user.model';
+import { envVars } from './env';
 
 // local strategy==>
 passport.use(
@@ -27,6 +27,7 @@ passport.use(
           (provider) => provider.provider === 'google'
         );
 
+        // throw error if the user is google authenticated==>
         if (isGoogleAuthenticated && !isUserExist.password) {
           return done(null, false, {
             message:
@@ -39,9 +40,34 @@ passport.use(
           isUserExist.password as string
         );
 
+        // throw error if the password is not matched==>
         if (!isPasswordMatched) {
           return done(null, false, {
             message: 'The email or password is not correct',
+          });
+        }
+
+        // throw error if the user is not verified==>
+        if (!isUserExist.isVerified) {
+          return done(null, false, {
+            message: 'User is not verified',
+          });
+        }
+
+        // throw error if the user is inactive or blocked==>
+        if (
+          isUserExist.isActive === IsActive.BLOCKED ||
+          isUserExist.isActive === IsActive.INACTIVE
+        ) {
+          return done(null, false, {
+            message: `User is ${isUserExist.isActive}`,
+          });
+        }
+
+        // throw error if the user is deleted==>
+        if (isUserExist.isDeleted) {
+          return done(null, false, {
+            message: `User is deleted`,
           });
         }
 
@@ -89,6 +115,30 @@ passport.use(
                 providerId: profile?.id,
               },
             ],
+          });
+        }
+
+        // throw error if the user is not verified==>
+        if (!user.isVerified) {
+          return done(null, false, {
+            message: 'User is not verified',
+          });
+        }
+
+        // throw error if the user is inactive or blocked==>
+        if (
+          user.isActive === IsActive.BLOCKED ||
+          user.isActive === IsActive.INACTIVE
+        ) {
+          return done(null, false, {
+            message: `User is ${user.isActive}`,
+          });
+        }
+
+        // throw error if the user is deleted==>
+        if (user.isDeleted) {
+          return done(null, false, {
+            message: `User is deleted`,
           });
         }
         done(null, user);

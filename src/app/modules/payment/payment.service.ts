@@ -192,7 +192,7 @@ const cancelPayment = async (transactionId: string) => {
 const getAllPayments = async (query: Record<string, string>) => {
   const queryBuilder = new QueryBuilder(Booking.find(), query);
 
-  const payment = queryBuilder.fields().filter().paginate();
+  const payment = queryBuilder.filter().sort().fields().paginate();
 
   const [data, meta] = await Promise.all([
     payment.build().populate('user', 'name email address phone role'),

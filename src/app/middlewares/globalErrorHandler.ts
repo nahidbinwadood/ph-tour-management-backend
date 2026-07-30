@@ -19,16 +19,21 @@ export const globalErrorHandler = async (
 
   let errorSources: IErrorSource[] = [];
 
-  // delete from the cloudinary if any error occurs(Single)==>
-  if (req.file) {
-    await deleteCloudinaryImage(req.file.path);
-  }
+  // cleanup uploaded files on error; never let cleanup throw out of the handler==>
+  try {
+    // single==>
+    if (req.file) {
+      await deleteCloudinaryImage(req.file.path);
+    }
 
-  // delete from the cloudinary if any error occurs(Multiple)==>
-  if (req.files && Array.isArray(req.files) && !!req.files.length) {
-    await Promise.all(
-      req.files.map((item) => deleteCloudinaryImage(item?.path))
-    );
+    // multiple==>
+    if (req.files && Array.isArray(req.files) && !!req.files.length) {
+      await Promise.all(
+        req.files.map((item) => deleteCloudinaryImage(item?.path))
+      );
+    }
+  } catch (cleanupError) {
+    console.error('Failed to cleanup uploaded files on error', cleanupError);
   }
 
   switch (true) {

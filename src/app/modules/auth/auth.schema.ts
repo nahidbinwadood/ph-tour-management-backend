@@ -68,3 +68,26 @@ export const changePasswordSchema = z.object({
     )
     .regex(/^(?=.*\d)/, 'New Password must contain at least 1 number.'),
 });
+
+export const setPasswordSchema = z.object({
+  password: z
+    .string('Password is required')
+    .min(8, 'Password must be 8 characters long')
+    .regex(/^(?=.*[A-Z])/, 'Password must contain at least 1 uppercase letter')
+    .regex(/^(?=.*\d)/, 'Password must contain at least 1 number.'),
+});
+
+export const forgetPasswordSchema = z.object({
+  email: z
+    .email({ message: 'Enter a valid email' })
+    .min(5, 'Email must be at least 5 characters long'),
+});
+
+export const resetPasswordSchema = z.object({
+  id: z.string().min(1, 'Id is required'),
+  password: z
+    .string('Password is required')
+    .min(8, 'Password must be 8 characters long')
+    .regex(/^(?=.*[A-Z])/, 'Password must contain at least 1 uppercase letter')
+    .regex(/^(?=.*\d)/, 'Password must contain at least 1 number.'),
+});

@@ -135,9 +135,20 @@ const updateUser = async (
   return newUpdateUser;
 };
 
+// get me ==>
+const getMe = async (userId: string) => {
+  const response = await User.findById(userId).select('-password');
+
+  if (!response) {
+    throw new AppError(httpStatusCode.NOT_FOUND, 'User not found');
+  }
+  return response;
+};
+
 export const UserServices = {
   getAllUsers,
   getSingleUser,
   deleteUser,
   updateUser,
+  getMe,
 };

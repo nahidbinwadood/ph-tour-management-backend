@@ -8,10 +8,10 @@ import { Payment } from '../payment/payment.model';
 import { PAYMENT_STATUS } from '../payment/payment.interface';
 import { SSLService } from '../../sslCommerz/sslCommerz.service';
 import { QueryBuilder } from '../../utils/QueryBuilder';
+import { getTransactionId } from '../../utils/getTransactionId';
 
-const getTransactionId = (userId: string) => {
-  return `tran_${Date.now()}_${userId}_${Math.floor(Math.random() * 10)}`;
-};
+// max total booking amount allowed (SSLCommerz / business cap)==>
+const MAX_BOOKING_AMOUNT = 500000;
 
 // create booking==>
 const createBooking = async (payload: Partial<IBooking>, userId: string) => {
@@ -40,8 +40,8 @@ const createBooking = async (payload: Partial<IBooking>, userId: string) => {
 
     const amount = Number(isTourExist?.costFrom) * Number(payload?.guestCount);
 
-    // throw error if the amount is greater than 500,000==>
-    if (amount > 500000) {
+    // throw error if the amount is greater than the max==>
+    if (amount > MAX_BOOKING_AMOUNT) {
       throw new AppError(
         httpStatus.BAD_REQUEST,
         'Max amount reached !! Decrease your guest count to proceed with the booking'
@@ -128,7 +128,7 @@ const getAllBookings = async (query: Record<string, string>) => {
     query
   );
 
-  const bookings = queryBuilder.sort().fields().paginate().filter();
+  const bookings = queryBuilder.filter().sort().fields().paginate();
 
   const [data, meta] = await Promise.all([
     bookings.build(),
@@ -150,7 +150,7 @@ const getMyBookings = async (userId: string, query: Record<string, string>) => {
     query
   );
 
-  const tour = queryBuilder.sort().fields().filter().paginate();
+  const tour = queryBuilder.filter().sort().fields().paginate();
 
   const [data, meta] = await Promise.all([
     tour.build(),
