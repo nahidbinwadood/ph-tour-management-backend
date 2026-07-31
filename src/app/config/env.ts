@@ -86,6 +86,7 @@ const loadEnvVariables = (): IEnvConfig => {
       throw new Error(`Missing required environment variable ${key}`);
     }
   });
+
   return {
     PORT: process.env.PORT as string,
     DB_URL: process.env.DB_URL as string,
