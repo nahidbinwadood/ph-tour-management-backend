@@ -1,46 +1,190 @@
+import { envVars } from './../../config/env';
 import bcrypt from 'bcryptjs';
 import httpStatusCode from 'http-status-codes';
-import { JwtPayload } from 'jsonwebtoken';
+import jwt, { JwtPayload } from 'jsonwebtoken';
+import { redisClient } from '../../config/redis.config';
 import AppError from '../../errorHelpers/AppError';
+import { generateOtp } from '../../utils/generateOtp';
 import { createUserTokens, generateNewAccessToken } from '../../utils/jwt';
+import { sendMail } from '../../utils/sendEmail';
 import { IAuthProvider, IUser } from '../users/user.interface';
 import { User } from '../users/user.model';
-import { envVars } from '../../config/env';
-import jwt from 'jsonwebtoken';
-import { sendMail } from '../../utils/sendEmail';
+
+const OTP_EXPIRATION = 2 * 60;
 
 // create user==>
 const createUser = async (payload: Partial<IUser>) => {
-  const isExist = await User.findOne({ email: payload.email });
+  const session = await User.startSession();
+  session.startTransaction();
+  try {
+    const isExist = await User.findOne({ email: payload.email });
 
-  // check if the user already exists ===>
-  if (isExist)
-    throw new AppError(
-      httpStatusCode.BAD_REQUEST,
-      'User already exists with this email'
+    // check if the user already exists ===>
+    if (isExist)
+      throw new AppError(
+        httpStatusCode.BAD_REQUEST,
+        'User already exists with this email'
+      );
+
+    // hash the password==>
+    payload.password = await bcrypt.hash(
+      payload.password as string,
+      Number(envVars.BCRYPT_SALT_ROUND)
     );
 
-  // hash the password==>
-  payload.password = await bcrypt.hash(
-    payload.password as string,
-    Number(envVars.BCRYPT_SALT_ROUND)
+    // set the auths==>
+    const authProvider: IAuthProvider = {
+      provider: 'credentials',
+      providerId: payload.email as string,
+    };
+
+    // create user==>
+    const user = await User.create({ ...payload, auths: [authProvider] });
+
+    const userObject = user.toObject();
+    delete userObject.password;
+
+    const key = `${user?.email}`;
+    const otp = generateOtp(6);
+
+    // generate otp and set it to the redis==>
+    await redisClient.set(key, otp, {
+      expiration: {
+        type: 'EX',
+        value: OTP_EXPIRATION,
+      },
+    });
+
+    // send email==>
+    await sendMail({
+      to: userObject?.email,
+      subject: 'Account Verification OTP',
+      templateName: 'send-otp',
+      templateValues: {
+        name: userObject?.name,
+        otp,
+        expiresIn: 2,
+      },
+    });
+
+    const tokenPayload = {
+      userId: userObject?.id,
+      email: userObject?.email,
+      role: userObject?.role,
+    };
+
+    // generate a temporary token==>
+    const tempToken = jwt.sign(tokenPayload, envVars.JWT_ACCESS_SECRET, {
+      expiresIn: '1d',
+    });
+
+    await session.commitTransaction();
+    session.endSession();
+    return {
+      token: tempToken,
+    };
+  } catch (error) {
+    await session.abortTransaction();
+    session.endSession();
+    throw error;
+  }
+};
+
+// verify otp==>
+const verifyOtp = async (otp: string, token: string) => {
+  const verifiedToken = jwt.verify(
+    token,
+    envVars.JWT_ACCESS_SECRET
+  ) as JwtPayload;
+
+  // throw error if the token is invalid==>
+  if (!verifiedToken?.userId) {
+    throw new AppError(httpStatusCode.UNAUTHORIZED, 'Invalid Token Provided');
+  }
+
+  const isUserExist = await User.findById(verifiedToken.userId);
+
+  // throw error if the user doest not exist==>
+  if (!isUserExist) {
+    throw new AppError(httpStatusCode.UNAUTHORIZED, 'User doest not exist');
+  }
+
+  const redisOtp = await redisClient.get(isUserExist?.email);
+
+  // throw error if the otp is expired==>
+  if (!redisOtp) {
+    throw new AppError(
+      httpStatusCode.UNAUTHORIZED,
+      'OTP has expired please try resending a new otp'
+    );
+  }
+
+  const isOtpMatched = Number(otp) === Number(redisOtp);
+
+  // throw error if the otp doest not match==>
+  if (!isOtpMatched) {
+    throw new AppError(httpStatusCode.UNAUTHORIZED, 'Invalid Otp Provided');
+  }
+
+  // update the verified status==>
+  await User.findByIdAndUpdate(
+    isUserExist?.id,
+    { isVerified: true },
+    { runValidators: true }
   );
+};
 
-  // set the auths==>
-  const authProvider: IAuthProvider = {
-    provider: 'credentials',
-    providerId: payload.email as string,
-  };
+// resend otp==>
+const resendOtp = async (token: string) => {
+  const verifiedToken = jwt.verify(
+    token,
+    envVars.JWT_ACCESS_SECRET
+  ) as JwtPayload;
 
-  // create user==>
-  const user = await User.create({ ...payload, auths: [authProvider] });
+  // throw error if the token is invalid==>
+  if (!verifiedToken?.userId) {
+    throw new AppError(httpStatusCode.UNAUTHORIZED, 'Invalid Token Provided');
+  }
 
-  const userObject = user.toObject();
-  delete userObject.password;
+  const isUserExist = await User.findById(verifiedToken.userId);
 
-  return {
-    ...userObject,
-  };
+  // throw error if the user doest not exist==>
+  if (!isUserExist) {
+    throw new AppError(httpStatusCode.UNAUTHORIZED, 'User doest not exist');
+  }
+
+  const hasPreviousOtp = await redisClient.get(isUserExist?.email);
+
+  // throw error if the otp is already in the redis==>
+  if (hasPreviousOtp) {
+    throw new AppError(
+      httpStatusCode.BAD_REQUEST,
+      'You cannot request for a new otp while your current otp is valid'
+    );
+  }
+
+  // generate a new otp==>
+  const otp = generateOtp(6);
+
+  // set a new otp==>
+  await redisClient.set(isUserExist?.email, otp, {
+    expiration: {
+      type: 'EX',
+      value: OTP_EXPIRATION,
+    },
+  });
+
+  // send email==>
+  await sendMail({
+    to: isUserExist?.email,
+    subject: 'Account Verification OTP',
+    templateName: 'send-otp',
+    templateValues: {
+      name: isUserExist?.name,
+      otp,
+      expiresIn: 2,
+    },
+  });
 };
 
 // credentials login==>
@@ -269,6 +413,8 @@ const resetPassword = async (
 
 export const AuthServices = {
   credentialsLogin,
+  verifyOtp,
+  resendOtp,
   createUser,
   getNewAccessToken,
   resetPassword,

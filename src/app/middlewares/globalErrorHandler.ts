@@ -94,14 +94,14 @@ export const globalErrorHandler = async (
     // ========= JWT ERROR(Token Expiration)=============
     case error instanceof jwt.TokenExpiredError: {
       statusCode = httpStatusCode.UNAUTHORIZED;
-      message = 'Session has expired. Please login again';
+      message = 'Session has expired. Please try with a new token';
       break;
     }
 
     // ========= JWT ERROR(Invalid Token)=============
     case error instanceof jwt.JsonWebTokenError: {
       statusCode = httpStatusCode.UNAUTHORIZED;
-      message = 'Invalid token. Please login again.';
+      message = 'Invalid token provided.';
       break;
     }
 

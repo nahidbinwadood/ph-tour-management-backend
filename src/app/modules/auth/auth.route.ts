@@ -6,8 +6,10 @@ import {
   createUserSchema,
   forgetPasswordSchema,
   loginSchema,
+  resendOtpSchema,
   resetPasswordSchema,
   setPasswordSchema,
+  verifyOtpSchema,
 } from './auth.schema';
 import checkAuth from '../../middlewares/checkAuth';
 import { Role } from '../users/user.interface';
@@ -21,6 +23,20 @@ router.post(
   '/register',
   validateRequest(createUserSchema),
   AuthControllers.createUser
+);
+
+// verify otp==>
+router.post(
+  '/verify-otp',
+  validateRequest(verifyOtpSchema),
+  AuthControllers.verifyOtp
+);
+
+// resend otp==>
+router.post(
+  '/resend-otp',
+  validateRequest(resendOtpSchema),
+  AuthControllers.resendOtp
 );
 
 // credentials login==>

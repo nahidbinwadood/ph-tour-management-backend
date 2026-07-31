@@ -19,7 +19,35 @@ const createUser = catchAsync(async (req: Request, res: Response) => {
   sendResponse(res, {
     success: true,
     statusCode: httpStatusCode.CREATED,
-    message: 'User Created Successfully',
+    message: 'An OTP has been sent to your email',
+    data: response,
+  });
+});
+
+// verify otp==>
+const verifyOtp = catchAsync(async (req: Request, res: Response) => {
+  const { otp, token } = req.body;
+
+  const response = await AuthServices.verifyOtp(otp, token);
+
+  sendResponse(res, {
+    success: true,
+    statusCode: httpStatusCode.OK,
+    message: 'OTP verification successful',
+    data: response,
+  });
+});
+
+// resend otp==>
+const resendOtp = catchAsync(async (req: Request, res: Response) => {
+  const { token } = req.body;
+
+  const response = await AuthServices.resendOtp(token);
+
+  sendResponse(res, {
+    success: true,
+    statusCode: httpStatusCode.OK,
+    message: 'A new OTP has been send to your email.',
     data: response,
   });
 });
@@ -168,6 +196,8 @@ const resetPassword = catchAsync(async (req: Request, res: Response) => {
 
 export const AuthControllers = {
   credentialsLogin,
+  verifyOtp,
+  resendOtp,
   createUser,
   getNewAccessToken,
   logout,
