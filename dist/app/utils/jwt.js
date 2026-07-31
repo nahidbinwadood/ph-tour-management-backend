@@ -14,11 +14,11 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.generateNewAccessToken = exports.verifyToken = exports.createUserTokens = void 0;
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
-const server_1 = __importDefault(require("../../server"));
 const user_interface_1 = require("../modules/users/user.interface");
 const user_model_1 = require("../modules/users/user.model");
 const AppError_1 = __importDefault(require("../errorHelpers/AppError"));
 const http_status_codes_1 = __importDefault(require("http-status-codes"));
+const env_1 = require("../config/env");
 // create user token==>
 const createUserTokens = (data) => {
     const payload = {
@@ -26,11 +26,11 @@ const createUserTokens = (data) => {
         email: data.email,
         role: data.role,
     };
-    const accessToken = jsonwebtoken_1.default.sign(payload, server_1.default.JWT_ACCESS_SECRET, {
-        expiresIn: server_1.default.JWT_ACCESS_EXPIRES,
+    const accessToken = jsonwebtoken_1.default.sign(payload, env_1.envVars.JWT_ACCESS_SECRET, {
+        expiresIn: env_1.envVars.JWT_ACCESS_EXPIRES,
     });
-    const refreshToken = jsonwebtoken_1.default.sign(payload, server_1.default.JWT_REFRESH_SECRET, {
-        expiresIn: server_1.default.JWT_REFRESH_EXPIRES,
+    const refreshToken = jsonwebtoken_1.default.sign(payload, env_1.envVars.JWT_REFRESH_SECRET, {
+        expiresIn: env_1.envVars.JWT_REFRESH_EXPIRES,
     });
     return {
         accessToken,
@@ -45,7 +45,7 @@ const verifyToken = (token, secret) => {
 exports.verifyToken = verifyToken;
 // generate new access token==>
 const generateNewAccessToken = (refreshToken) => __awaiter(void 0, void 0, void 0, function* () {
-    const decodedToken = (0, exports.verifyToken)(refreshToken, server_1.default.JWT_REFRESH_SECRET);
+    const decodedToken = (0, exports.verifyToken)(refreshToken, env_1.envVars.JWT_REFRESH_SECRET);
     const userData = yield user_model_1.User.findOne({ _id: decodedToken.userId });
     if (!userData) {
         throw new AppError_1.default(http_status_codes_1.default.BAD_REQUEST, 'User not found');

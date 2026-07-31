@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.changePasswordSchema = exports.loginSchema = exports.createUserSchema = void 0;
+exports.resendOtpSchema = exports.verifyOtpSchema = exports.resetPasswordSchema = exports.forgetPasswordSchema = exports.setPasswordSchema = exports.changePasswordSchema = exports.loginSchema = exports.createUserSchema = void 0;
 const zod_1 = __importDefault(require("zod"));
 const user_interface_1 = require("../users/user.interface");
 exports.createUserSchema = zod_1.default.object({
@@ -56,4 +56,34 @@ exports.changePasswordSchema = zod_1.default.object({
         .regex(/^(?=.*[A-Z])/, 'New Password must contain at least 1 uppercase letter')
         .regex(/^(?=.*[!@#$%^&*])/, 'New Password must contain at least 1 special character.')
         .regex(/^(?=.*\d)/, 'New Password must contain at least 1 number.'),
+});
+exports.setPasswordSchema = zod_1.default.object({
+    password: zod_1.default
+        .string('Password is required')
+        .min(8, 'Password must be 8 characters long')
+        .regex(/^(?=.*[A-Z])/, 'Password must contain at least 1 uppercase letter')
+        .regex(/^(?=.*\d)/, 'Password must contain at least 1 number.'),
+});
+exports.forgetPasswordSchema = zod_1.default.object({
+    email: zod_1.default
+        .email({ message: 'Enter a valid email' })
+        .min(5, 'Email must be at least 5 characters long'),
+});
+exports.resetPasswordSchema = zod_1.default.object({
+    id: zod_1.default.string().min(1, 'Id is required'),
+    password: zod_1.default
+        .string('Password is required')
+        .min(8, 'Password must be 8 characters long')
+        .regex(/^(?=.*[A-Z])/, 'Password must contain at least 1 uppercase letter')
+        .regex(/^(?=.*\d)/, 'Password must contain at least 1 number.'),
+});
+exports.verifyOtpSchema = zod_1.default.object({
+    otp: zod_1.default
+        .string('Otp is required')
+        .min(6, 'Otp must be 6 characters long')
+        .max(6, 'OTP cannot exceed 8 characters'),
+    token: zod_1.default.string('Token is required').min(1, 'Token is required'),
+});
+exports.resendOtpSchema = zod_1.default.object({
+    token: zod_1.default.string('Token is required').min(1, 'Token is required'),
 });
