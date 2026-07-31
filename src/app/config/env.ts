@@ -1,6 +1,12 @@
 import dotenv from 'dotenv';
+import path from 'path';
 
-dotenv.config();
+const nodeEnv = process.env.NODE_ENV || 'development';
+
+// load the env file matching the current environment (.env.development / .env.production)
+dotenv.config({
+  path: path.resolve(process.cwd(), `.env.${nodeEnv}`),
+});
 
 interface IEnvConfig {
   PORT: string;

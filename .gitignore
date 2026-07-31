@@ -5,3 +5,5 @@ node_modules
 seedDivision.js
 seedTourType.js
 seedTours.js
+.vercel
+.env*
