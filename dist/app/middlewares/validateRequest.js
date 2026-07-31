@@ -12,9 +12,12 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const sendResponse_1 = __importDefault(require("../utils/sendResponse"));
 const http_status_codes_1 = __importDefault(require("http-status-codes"));
+const sendResponse_1 = __importDefault(require("../utils/sendResponse"));
 const validateRequest = (zodSchema) => (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    if (req.body.data) {
+        req.body = JSON.parse(req.body.data);
+    }
     // send error if the request body is empty==>
     if (!req.body || Object.keys(req.body).length === 0) {
         (0, sendResponse_1.default)(res, {

@@ -13,6 +13,10 @@ const user_schema_1 = require("./user.schema");
 const router = (0, express_1.Router)();
 // get all the users==>
 router.get('/all-users', (0, checkAuth_1.default)(user_interface_1.Role.ADMIN, user_interface_1.Role.SUPER_ADMIN), user_controller_1.UserControllers.getAllUsers);
+// get me route==>
+router.get('/me', (0, checkAuth_1.default)(...Object.values(user_interface_1.Role)), user_controller_1.UserControllers.getMe);
+// get single user data==>
+router.get('/:id', (0, checkAuth_1.default)(...Object.values(user_interface_1.Role)), user_controller_1.UserControllers.getSingleUser);
 // update user==>
 router.patch('/:id', (0, validateRequest_1.default)(user_schema_1.updateUserSchema), (0, checkAuth_1.default)(...Object.values(user_interface_1.Role)), user_controller_1.UserControllers.updateUser);
 // delete user==>

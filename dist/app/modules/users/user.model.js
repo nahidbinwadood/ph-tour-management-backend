@@ -1,9 +1,10 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.User = void 0;
+exports.User = exports.schemaTransform = void 0;
+/* eslint-disable @typescript-eslint/no-explicit-any */
 const mongoose_1 = require("mongoose");
 const user_interface_1 = require("./user.interface");
-const schemaTransform = {
+exports.schemaTransform = {
     virtuals: true,
     transform: (_, ret) => {
         ret.id = ret._id;
@@ -41,7 +42,7 @@ const userSchema = new mongoose_1.Schema({
 }, {
     timestamps: true,
     versionKey: false,
-    toJSON: schemaTransform,
-    toObject: schemaTransform,
+    toJSON: exports.schemaTransform,
+    toObject: exports.schemaTransform,
 });
 exports.User = (0, mongoose_1.model)('User', userSchema);
