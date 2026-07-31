@@ -1,13 +1,14 @@
 import { Router } from 'express';
 import checkAuth from '../../middlewares/checkAuth';
-import { Role } from '../users/user.interface';
 import validateRequest from '../../middlewares/validateRequest';
+import { Role } from '../users/user.interface';
+import { TourControllers } from './tour.controller';
 import {
   createTourSchema,
   tourTypeSchema,
   updateTourSchema,
 } from './tour.schema';
-import { TourControllers } from './tour.controller';
+import { multerUpload } from '../../config/multer.config';
 
 const router = Router();
 
@@ -18,11 +19,8 @@ router.post(
   validateRequest(tourTypeSchema),
   TourControllers.createTourTypes
 );
-router.get(
-  '/tour-types',
-  checkAuth(Role.ADMIN, Role.SUPER_ADMIN),
-  TourControllers.getAllTourTypes
-);
+router.get('/tour-types', TourControllers.getAllTourTypes);
+router.get('/tour-types/:id', TourControllers.getSingleTourType);
 
 router.patch(
   '/tour-types/:id',
@@ -41,19 +39,18 @@ router.delete(
 router.post(
   '/create',
   checkAuth(Role.ADMIN, Role.SUPER_ADMIN),
+  multerUpload.array('files'),
   validateRequest(createTourSchema),
   TourControllers.createTour
 );
 
-router.get(
-  '/',
-  checkAuth(Role.ADMIN, Role.SUPER_ADMIN),
-  TourControllers.getAllTours
-);
+router.get('/', TourControllers.getAllTours);
+router.get('/:slug', TourControllers.getSingleTour);
 
 router.patch(
   '/:id',
   checkAuth(Role.ADMIN, Role.SUPER_ADMIN),
+  multerUpload.array('files'),
   validateRequest(updateTourSchema),
   TourControllers.updateTour
 );

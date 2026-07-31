@@ -16,6 +16,18 @@ const getAllUsers = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+// get all users==>
+const getSingleUser = catchAsync(async (req: Request, res: Response) => {
+  const id = req.params.id;
+  const result = await UserServices.getSingleUser(id);
+  sendResponse(res, {
+    success: true,
+    statusCode: httpStatusCode.OK,
+    message: 'User data retrieved successfully!',
+    data: result,
+  });
+});
+
 // delete user==>
 const deleteUser = catchAsync(async (req: Request, res: Response) => {
   const decodedToken = req.user;
@@ -48,8 +60,25 @@ const updateUser = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+// get me data==>
+const getMe = catchAsync(async (req: Request, res: Response) => {
+  const { userId } = req.user as JwtPayload;
+  const response = await UserServices.getMe(userId);
+
+  console.log({ response });
+
+  sendResponse(res, {
+    success: true,
+    statusCode: httpStatusCode.OK,
+    message: 'User data fetched successfully',
+    data: response,
+  });
+});
+
 export const UserControllers = {
   getAllUsers,
+  getSingleUser,
   deleteUser,
   updateUser,
+  getMe,
 };

@@ -10,6 +10,7 @@ import { JwtPayload } from 'jsonwebtoken';
 import { createUserTokens } from '../../utils/jwt';
 import { envVars } from '../../config/env';
 import passport from 'passport';
+import { HttpStatusCode } from 'axios';
 
 // create user==>
 const createUser = catchAsync(async (req: Request, res: Response) => {
@@ -18,7 +19,35 @@ const createUser = catchAsync(async (req: Request, res: Response) => {
   sendResponse(res, {
     success: true,
     statusCode: httpStatusCode.CREATED,
-    message: 'User Created Successfully',
+    message: 'An OTP has been sent to your email',
+    data: response,
+  });
+});
+
+// verify otp==>
+const verifyOtp = catchAsync(async (req: Request, res: Response) => {
+  const { otp, token } = req.body;
+
+  const response = await AuthServices.verifyOtp(otp, token);
+
+  sendResponse(res, {
+    success: true,
+    statusCode: httpStatusCode.OK,
+    message: 'OTP verification successful',
+    data: response,
+  });
+});
+
+// resend otp==>
+const resendOtp = catchAsync(async (req: Request, res: Response) => {
+  const { token } = req.body;
+
+  const response = await AuthServices.resendOtp(token);
+
+  sendResponse(res, {
+    success: true,
+    statusCode: httpStatusCode.OK,
+    message: 'A new OTP has been send to your email.',
     data: response,
   });
 });
@@ -39,7 +68,8 @@ const credentialsLogin = catchAsync(
 
       const userTokens = createUserTokens(user);
 
-      delete user.toObject().password;
+      const userObj = user.toObject();
+      delete userObj.password;
 
       setAuthCookie(res, userTokens);
 
@@ -51,7 +81,7 @@ const credentialsLogin = catchAsync(
           tokens: {
             ...userTokens,
           },
-          user: user,
+          user: userObj,
         },
       });
     })(req, res, next);
@@ -91,19 +121,29 @@ const logout = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
-// reset password==>
-const resetPassword = catchAsync(async (req: Request, res: Response) => {
-  const decodedToken = req.user;
+// change password==>
+const changePassword = catchAsync(async (req: Request, res: Response) => {
+  const { userId } = req.user as JwtPayload;
 
-  const response = await AuthServices.resetPassword(
-    req.body,
-    decodedToken as JwtPayload
-  );
+  const response = await AuthServices.changePassword(req.body, userId);
 
   sendResponse(res, {
     success: true,
     statusCode: httpStatusCode.OK,
-    message: 'Password reset completed successfully',
+    message: 'Password changed successfully',
+    data: response,
+  });
+});
+
+// set password==>
+const setPassword = catchAsync(async (req: Request, res: Response) => {
+  const { userId } = req.user as JwtPayload;
+  const response = await AuthServices.setPassword(req.body, userId);
+
+  sendResponse(res, {
+    success: true,
+    statusCode: HttpStatusCode.Ok,
+    message: 'Password set successfully',
     data: response,
   });
 });
@@ -129,11 +169,41 @@ const googleCallback = catchAsync(async (req: Request, res: Response) => {
   res.redirect(`${envVars.FRONTEND_URL}/${redirectTo}`);
 });
 
+// forget password==>
+const forgetPassword = catchAsync(async (req: Request, res: Response) => {
+  const { email } = req.body;
+  await AuthServices.forgetPassword(email);
+
+  sendResponse(res, {
+    success: true,
+    statusCode: httpStatusCode.OK,
+    message: 'Email Sent Successfully',
+  });
+});
+
+// reset password==>
+const resetPassword = catchAsync(async (req: Request, res: Response) => {
+  const decodedToken = req.user;
+
+  await AuthServices.resetPassword(req.body, decodedToken as JwtPayload);
+
+  sendResponse(res, {
+    success: true,
+    statusCode: httpStatusCode.OK,
+    message: 'Password reset completed successfully',
+  });
+});
+
 export const AuthControllers = {
   credentialsLogin,
+  verifyOtp,
+  resendOtp,
   createUser,
   getNewAccessToken,
   logout,
   resetPassword,
+  changePassword,
+  setPassword,
+  forgetPassword,
   googleCallback,
 };

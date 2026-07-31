@@ -2,6 +2,7 @@ import httpStatusCode from 'http-status-codes';
 import AppError from '../../errorHelpers/AppError';
 import { IDivision } from './division.interface';
 import { Division } from './division.model';
+import { deleteCloudinaryImage } from '../../config/cloudinary.config';
 
 // create division==>
 const createDivision = async (payload: IDivision) => {
@@ -25,8 +26,8 @@ const getAllDivisions = async () => {
 };
 
 // get single division==>
-const getSingleDivision = async (id: string) => {
-  const isExist = await Division.findById(id);
+const getSingleDivision = async (slug: string) => {
+  const isExist = await Division.findOne({ slug });
   if (!isExist) {
     throw new AppError(httpStatusCode.NOT_FOUND, 'Division not found');
   }
@@ -53,11 +54,26 @@ const updateDivision = async (id: string, payload: Partial<IDivision>) => {
     );
   }
 
-  const response = await Division.findByIdAndUpdate(id, payload, {
-    new: true,
-    runValidators: true,
-  });
-  return response;
+  const session = await Division.startSession();
+  session.startTransaction();
+  try {
+    const response = await Division.findByIdAndUpdate(id, payload, {
+      new: true,
+      runValidators: true,
+      session,
+    });
+
+    if (isExist?.thumbnail) {
+      await deleteCloudinaryImage(isExist.thumbnail);
+    }
+    await session.commitTransaction();
+    session.endSession();
+    return response;
+  } catch (error) {
+    await session.abortTransaction();
+    session.endSession();
+    throw error;
+  }
 };
 
 // delete division==>
@@ -68,8 +84,23 @@ const deleteDivision = async (id: string) => {
     throw new AppError(httpStatusCode.BAD_REQUEST, 'Division not found');
   }
 
-  const response = await Division.findByIdAndDelete(id);
-  return response;
+  const session = await Division.startSession();
+  session.startTransaction();
+
+  try {
+    const response = await Division.findByIdAndDelete(id, { session });
+    if (isExist?.thumbnail) {
+      await deleteCloudinaryImage(isExist?.thumbnail);
+    }
+
+    await session.commitTransaction();
+    session.endSession();
+    return response;
+  } catch (error) {
+    await session.abortTransaction();
+    session.endSession();
+    throw error;
+  }
 };
 
 export const DivisionServices = {

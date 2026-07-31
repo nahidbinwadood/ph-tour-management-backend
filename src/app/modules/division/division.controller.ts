@@ -3,10 +3,16 @@ import httpStatusCode from 'http-status-codes';
 import { catchAsync } from '../../utils/catchAsync';
 import sendResponse from '../../utils/sendResponse';
 import { DivisionServices } from './division.service';
+import AppError from '../../errorHelpers/AppError';
+import httpStatus from 'http-status-codes';
+import { IDivision } from './division.interface';
 
 // create division==>
 const createDivision = catchAsync(async (req: Request, res: Response) => {
-  const payload = req.body;
+  const payload: IDivision = {
+    ...req.body,
+    thumbnail: req.file?.path,
+  };
 
   const response = await DivisionServices.createDivision(payload);
 
@@ -31,9 +37,12 @@ const getAllDivisions = catchAsync(async (req: Request, res: Response) => {
 
 // get single division==>
 const getSingleDivision = catchAsync(async (req: Request, res: Response) => {
-  const id = req.params.id;
+  const slug = req.params.slug;
 
-  const response = await DivisionServices.getSingleDivision(id);
+  if (!slug) {
+    throw new AppError(httpStatus.NOT_FOUND, 'Division slug is missing');
+  }
+  const response = await DivisionServices.getSingleDivision(slug);
 
   sendResponse(res, {
     success: true,
@@ -46,7 +55,10 @@ const getSingleDivision = catchAsync(async (req: Request, res: Response) => {
 // update division==>
 const updateDivision = catchAsync(async (req: Request, res: Response) => {
   const id = req.params.id;
-  const payload = req.body;
+  const payload: Partial<IDivision> = {
+    ...req.body,
+    ...(req.file ? { thumbnail: req.file?.path } : {}),
+  };
 
   const response = await DivisionServices.updateDivision(id, payload);
 

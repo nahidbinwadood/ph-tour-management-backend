@@ -6,8 +6,9 @@ import jwt from 'jsonwebtoken';
 import { envVars } from '../config/env';
 import AppError from '../errorHelpers/AppError';
 import { IErrorSource } from '../interface/error.type';
+import { deleteCloudinaryImage } from '../config/cloudinary.config';
 
-export const globalErrorHandler = (
+export const globalErrorHandler = async (
   error: any,
   req: Request,
   res: Response,
@@ -18,10 +19,27 @@ export const globalErrorHandler = (
 
   let errorSources: IErrorSource[] = [];
 
+  // cleanup uploaded files on error; never let cleanup throw out of the handler==>
+  try {
+    // single==>
+    if (req.file) {
+      await deleteCloudinaryImage(req.file.path);
+    }
+
+    // multiple==>
+    if (req.files && Array.isArray(req.files) && !!req.files.length) {
+      await Promise.all(
+        req.files.map((item) => deleteCloudinaryImage(item?.path))
+      );
+    }
+  } catch (cleanupError) {
+    console.error('Failed to cleanup uploaded files on error', cleanupError);
+  }
+
   switch (true) {
     // App Error==>
     case error instanceof AppError: {
-      statusCode = httpStatusCode.BAD_GATEWAY;
+      statusCode = error.statusCode;
       message = error?.message;
       break;
     }
@@ -76,14 +94,14 @@ export const globalErrorHandler = (
     // ========= JWT ERROR(Token Expiration)=============
     case error instanceof jwt.TokenExpiredError: {
       statusCode = httpStatusCode.UNAUTHORIZED;
-      message = 'Session has expired. Please login again';
+      message = 'Session has expired. Please try with a new token';
       break;
     }
 
     // ========= JWT ERROR(Invalid Token)=============
     case error instanceof jwt.JsonWebTokenError: {
       statusCode = httpStatusCode.UNAUTHORIZED;
-      message = 'Invalid token. Please login again.';
+      message = 'Invalid token provided.';
       break;
     }
 

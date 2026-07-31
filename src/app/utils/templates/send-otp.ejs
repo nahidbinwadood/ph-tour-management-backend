@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Verify Your Email</title>
+  </head>
+
+  <body
+    style="
+      margin: 0;
+      padding: 0;
+      background-color: #f4f7fb;
+      font-family: Arial, Helvetica, sans-serif;
+      color: #1f2937;
+    "
+  >
+    <table
+      width="100%"
+      cellpadding="0"
+      cellspacing="0"
+      border="0"
+      style="background-color: #f4f7fb; padding: 40px 15px"
+    >
+      <tr>
+        <td align="center">
+          <table
+            width="100%"
+            cellpadding="0"
+            cellspacing="0"
+            border="0"
+            style="
+              max-width: 600px;
+              background-color: #ffffff;
+              border-radius: 16px;
+              overflow: hidden;
+              box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
+            "
+          >
+            <tr>
+              <td
+                align="center"
+                style="background-color: #0f766e; padding: 35px 30px"
+              >
+                <div
+                  style="
+                    font-size: 26px;
+                    font-weight: bold;
+                    color: #ffffff;
+                    letter-spacing: -0.5px;
+                  "
+                >
+                  🧭 PH Tours
+                </div>
+              </td>
+            </tr>
+
+            <tr>
+              <td style="padding: 45px 40px">
+                <h1
+                  style="
+                    margin: 0 0 15px;
+                    text-align: center;
+                    font-size: 26px;
+                    line-height: 34px;
+                    color: #111827;
+                  "
+                >
+                  Verify Your Email
+                </h1>
+
+                <p
+                  style="
+                    margin: 0 0 25px;
+                    text-align: center;
+                    font-size: 15px;
+                    line-height: 24px;
+                    color: #6b7280;
+                  "
+                >
+                  Hi <%= name %>,<br />
+                  Welcome to PH Tours! Use the code below to verify your email
+                  address and start exploring your next adventure.
+                </p>
+
+                <table
+                  width="100%"
+                  cellpadding="0"
+                  cellspacing="0"
+                  border="0"
+                  style="margin: 0 0 25px"
+                >
+                  <tr>
+                    <td align="center">
+                      <div
+                        style="
+                          display: inline-block;
+                          padding: 20px 35px;
+                          background-color: #f3f4f6;
+                          border: 2px dashed #0f766e;
+                          border-radius: 12px;
+                        "
+                      >
+                        <div
+                          style="
+                            font-size: 12px;
+                            font-weight: bold;
+                            letter-spacing: 2px;
+                            color: #6b7280;
+                            text-transform: uppercase;
+                            margin-bottom: 8px;
+                          "
+                        >
+                          Verification Code
+                        </div>
+
+                        <div
+                          style="
+                            font-size: 36px;
+                            font-weight: bold;
+                            letter-spacing: 10px;
+                            color: #0f766e;
+                            padding-left: 10px;
+                          "
+                        >
+                          <%= otp %>
+                        </div>
+                      </div>
+                    </td>
+                  </tr>
+                </table>
+
+                <p
+                  style="
+                    margin: 0 0 30px;
+                    text-align: center;
+                    font-size: 14px;
+                    line-height: 22px;
+                    color: #6b7280;
+                  "
+                >
+                  This code will expire in
+                  <strong style="color: #111827"
+                    ><%= expiresIn %> minutes</strong
+                  >.
+                </p>
+
+                <div
+                  style="height: 1px; background-color: #e5e7eb; margin: 30px 0"
+                ></div>
+
+                <table
+                  width="100%"
+                  cellpadding="0"
+                  cellspacing="0"
+                  border="0"
+                  style="background-color: #ecfdf5; border-radius: 10px"
+                >
+                  <tr>
+                    <td style="padding: 16px 18px">
+                      <p
+                        style="
+                          margin: 0;
+                          font-size: 13px;
+                          line-height: 21px;
+                          color: #065f46;
+                        "
+                      >
+                        If you didn't request this code, you can safely ignore
+                        this email. Never share your verification code with
+                        anyone.
+                      </p>
+                    </td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+
+            <tr>
+              <td
+                align="center"
+                style="
+                  background-color: #f9fafb;
+                  padding: 25px 30px;
+                  border-top: 1px solid #e5e7eb;
+                "
+              >
+                <p style="margin: 0; font-size: 13px; color: #9ca3af">
+                  © <%= new Date().getFullYear() %> PH Tours. All rights
+                  reserved.
+                </p>
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>
+  </body>
+</html>

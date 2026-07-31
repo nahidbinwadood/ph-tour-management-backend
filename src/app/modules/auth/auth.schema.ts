@@ -68,3 +68,38 @@ export const changePasswordSchema = z.object({
     )
     .regex(/^(?=.*\d)/, 'New Password must contain at least 1 number.'),
 });
+
+export const setPasswordSchema = z.object({
+  password: z
+    .string('Password is required')
+    .min(8, 'Password must be 8 characters long')
+    .regex(/^(?=.*[A-Z])/, 'Password must contain at least 1 uppercase letter')
+    .regex(/^(?=.*\d)/, 'Password must contain at least 1 number.'),
+});
+
+export const forgetPasswordSchema = z.object({
+  email: z
+    .email({ message: 'Enter a valid email' })
+    .min(5, 'Email must be at least 5 characters long'),
+});
+
+export const resetPasswordSchema = z.object({
+  id: z.string().min(1, 'Id is required'),
+  password: z
+    .string('Password is required')
+    .min(8, 'Password must be 8 characters long')
+    .regex(/^(?=.*[A-Z])/, 'Password must contain at least 1 uppercase letter')
+    .regex(/^(?=.*\d)/, 'Password must contain at least 1 number.'),
+});
+
+export const verifyOtpSchema = z.object({
+  otp: z
+    .string('Otp is required')
+    .min(6, 'Otp must be 6 characters long')
+    .max(6, 'OTP cannot exceed 8 characters'),
+  token: z.string('Token is required').min(1, 'Token is required'),
+});
+
+export const resendOtpSchema = z.object({
+  token: z.string('Token is required').min(1, 'Token is required'),
+});

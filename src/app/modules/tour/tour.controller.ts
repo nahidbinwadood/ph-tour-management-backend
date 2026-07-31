@@ -4,6 +4,7 @@ import { catchAsync } from '../../utils/catchAsync';
 import sendResponse from '../../utils/sendResponse';
 import { TourServices } from './tour.service';
 import AppError from '../../errorHelpers/AppError';
+import { ITour } from './tour.interface';
 
 // ============= Tour Types ================
 
@@ -22,6 +23,23 @@ const createTourTypes = catchAsync(async (req: Request, res: Response) => {
 // all tour types==>
 const getAllTourTypes = catchAsync(async (req: Request, res: Response) => {
   const response = await TourServices.getAllTourTypes();
+
+  sendResponse(res, {
+    success: true,
+    statusCode: httpStatus.OK,
+    message: 'Tour types data fetched successfully',
+    data: response,
+  });
+});
+
+// single tour type==>
+const getSingleTourType = catchAsync(async (req: Request, res: Response) => {
+  const id = req.params.id;
+
+  if (!id) {
+    throw new AppError(httpStatus.NOT_FOUND, 'Tour type is missing');
+  }
+  const response = await TourServices.getSingleTourType(id);
 
   sendResponse(res, {
     success: true,
@@ -64,7 +82,15 @@ const deleteTourTypes = catchAsync(async (req: Request, res: Response) => {
 
 // create tour==>
 const createTour = catchAsync(async (req: Request, res: Response) => {
-  const response = await TourServices.createTour(req.body);
+  const imageUrls = (req.files as Express.Multer.File[])?.map(
+    (item) => item?.path
+  );
+
+  const payload: ITour = {
+    ...req.body,
+    images: [...imageUrls],
+  };
+  const response = await TourServices.createTour(payload);
 
   sendResponse(res, {
     success: true,
@@ -76,12 +102,36 @@ const createTour = catchAsync(async (req: Request, res: Response) => {
 
 // get all tours==>
 const getAllTours = catchAsync(async (req: Request, res: Response) => {
-  const response = await TourServices.getAllTours();
+  const query = req.query || '';
+
+  const response = await TourServices.getAllTours(
+    query as Record<string, string>
+  );
 
   sendResponse(res, {
     success: true,
     statusCode: httpStatus.OK,
     message: 'All tours data fetched successfully',
+    data: response,
+  });
+});
+
+// get single tour==>
+const getSingleTour = catchAsync(async (req: Request, res: Response) => {
+  const slug = req.params.slug;
+  if (!slug) {
+    throw new AppError(httpStatus.NOT_FOUND, 'Slug is missing');
+  }
+
+  const response = await TourServices.getSingleTour(slug);
+
+  if (!response) {
+    throw new AppError(httpStatus.BAD_REQUEST, 'Invalid slug provided');
+  }
+  sendResponse(res, {
+    success: true,
+    statusCode: httpStatus.OK,
+    message: 'Tour data fetched successfully',
     data: response,
   });
 });
@@ -94,7 +144,15 @@ const updateTour = catchAsync(async (req: Request, res: Response) => {
     throw new AppError(httpStatus.BAD_REQUEST, 'Tour id is missing');
   }
 
-  const response = await TourServices.updateTour(id, req.body);
+  const newImageUrls = (req.files as Express.Multer.File[])?.map(
+    (item) => item?.path
+  );
+
+  const payload: ITour = {
+    ...req.body,
+    images: [...newImageUrls],
+  };
+  const response = await TourServices.updateTour(id, payload);
 
   sendResponse(res, {
     success: true,
@@ -119,10 +177,12 @@ const deleteTour = catchAsync(async (req: Request, res: Response) => {
 export const TourControllers = {
   createTourTypes,
   getAllTourTypes,
+  getSingleTourType,
   updateTourTypes,
   deleteTourTypes,
   createTour,
   getAllTours,
+  getSingleTour,
   updateTour,
   deleteTour,
 };

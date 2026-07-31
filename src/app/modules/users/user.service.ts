@@ -10,10 +10,22 @@ import { envVars } from '../../config/env';
 const getAllUsers = async () => {
   const user = await User.find({});
   const updatedResponse = user?.map((user) => {
-    const { password, ...rest } = user.toObject();
-    return rest;
+    const response = user.toObject();
+    delete response.password;
+    return { ...response };
   });
   return updatedResponse;
+};
+
+// get single user==>
+const getSingleUser = async (id: string) => {
+  const user = await User.findById(id);
+  if (!user) {
+    throw new AppError(httpStatusCode.NOT_FOUND, 'User not found');
+  }
+  const response = user.toObject();
+  delete response.password;
+  return { ...response };
 };
 
 // delete user==>
@@ -123,8 +135,20 @@ const updateUser = async (
   return newUpdateUser;
 };
 
+// get me ==>
+const getMe = async (userId: string) => {
+  const response = await User.findById(userId).select('-password');
+
+  if (!response) {
+    throw new AppError(httpStatusCode.NOT_FOUND, 'User not found');
+  }
+  return response;
+};
+
 export const UserServices = {
   getAllUsers,
+  getSingleUser,
   deleteUser,
   updateUser,
+  getMe,
 };
