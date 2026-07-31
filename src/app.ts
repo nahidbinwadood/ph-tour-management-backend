@@ -4,16 +4,17 @@ import express, { Application, Request, Response } from 'express';
 import expressSession from 'express-session';
 import httpStatusCode from 'http-status-codes';
 import passport from 'passport';
+import { envVars } from './app/config/env';
 import './app/config/passport';
 import { globalErrorHandler } from './app/middlewares/globalErrorHandler';
 import notFound from './app/middlewares/notFound';
 import router from './app/routes';
-import { envVars } from './app/config/env';
 
 const app: Application = express();
 
 // parser==>
-app.use(cors());
+app.use(cors({ origin: envVars.FRONTEND_URL, credentials: true }));
+app.disable('x-powered-by')
 app.use(
   expressSession({
     secret: envVars.EXPRESS_SESSION_SECRET,
@@ -21,6 +22,8 @@ app.use(
     saveUninitialized: false,
   })
 );
+// app.use(formData.parse());
+app.use(express.urlencoded({ extended: true }));
 app.use(passport.initialize());
 app.use(passport.session());
 app.use(express.json());

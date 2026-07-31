@@ -1,10 +1,11 @@
 import httpStatus from 'http-status-codes';
 import AppError from '../../errorHelpers/AppError';
-import { QueryBuilder } from '../../utils/queryBuilder';
 import { Division } from '../division/division.model';
 import { tourSearchableFields } from './tour.contant';
 import { ITour } from './tour.interface';
 import { Tour, TourType } from './tour.model';
+import { QueryBuilder } from '../../utils/QueryBuilder';
+import { deleteCloudinaryImage } from '../../config/cloudinary.config';
 
 // ============= Tour Types ================
 
@@ -155,28 +156,93 @@ const updateTour = async (id: string, payload: Partial<ITour>) => {
     );
   }
 
-  const tourTypeExists = await TourType.findById(payload.tourType);
-  if (!tourTypeExists) {
-    throw new AppError(
-      httpStatus.BAD_REQUEST,
-      'Tour type does not exist. Please provide a valid tour type'
-    );
+  // check the tour type==>
+  if (payload.tourType) {
+    const tourTypeExists = await TourType.findById(payload.tourType);
+    if (!tourTypeExists) {
+      throw new AppError(
+        httpStatus.BAD_REQUEST,
+        'Tour type does not exist. Please provide a valid tour type'
+      );
+    }
   }
 
-  const divisionExists = await Division.findById(payload.division);
-  if (!divisionExists) {
-    throw new AppError(
-      httpStatus.BAD_REQUEST,
-      'Division does not exist. Please provide a valid division'
-    );
+  // check the division==>
+  if (payload.division) {
+    const divisionExists = await Division.findById(payload.division);
+    if (!divisionExists) {
+      throw new AppError(
+        httpStatus.BAD_REQUEST,
+        'Division does not exist. Please provide a valid division'
+      );
+    }
   }
 
-  const response = await Tour.findByIdAndUpdate(id, payload, {
-    new: true,
-    runValidators: true,
-  });
+  const session = await Tour.startSession();
+  session.startTransaction();
 
-  return response;
+  try {
+    // if user add new images==>
+    if (
+      payload?.images &&
+      !!payload?.images?.length &&
+      isExist?.images &&
+      !!isExist?.images?.length
+    ) {
+      payload.images = [...isExist.images, ...payload.images];
+    }
+
+    // if user only delete images==>
+    if (
+      payload?.deletedFiles &&
+      !!payload?.deletedFiles?.length &&
+      !payload.images
+    ) {
+      payload.images = isExist?.images?.filter(
+        (url) => !payload?.deletedFiles?.includes(url)
+      );
+    }
+
+    // if the user upload image and delete image at the same time==>
+    if (
+      payload?.images &&
+      !!payload?.images &&
+      payload?.deletedFiles &&
+      !!payload.deletedFiles.length
+    ) {
+      const restDbImages =
+        isExist?.images?.filter(
+          (url) => !payload.deletedFiles?.includes(url)
+        ) || [];
+
+      const updatedImagesUrls =
+        payload.images
+          ?.filter((url) => !payload.deletedFiles?.includes(url))
+          .filter((url) => !restDbImages.includes(url)) || [];
+
+      payload.images = [...restDbImages, ...updatedImagesUrls];
+    }
+
+    const response = await Tour.findByIdAndUpdate(id, payload, {
+      new: true,
+      runValidators: true,
+      session,
+    });
+
+    // delete all the unused images==>
+    if (payload?.deletedFiles && payload?.deletedFiles?.length) {
+      await Promise.all(
+        payload?.deletedFiles?.map((url) => deleteCloudinaryImage(url))
+      );
+    }
+    await session.commitTransaction();
+    session.endSession();
+    return response;
+  } catch (error) {
+    await session.abortTransaction();
+    session.endSession();
+    throw error;
+  }
 };
 
 // delete tour==>
@@ -186,7 +252,24 @@ const deleteTour = async (id: string) => {
     throw new AppError(httpStatus.NOT_FOUND, 'Tour not found');
   }
 
-  await Tour.findByIdAndDelete(id);
+  const session = await Tour.startSession();
+  session.startTransaction();
+  try {
+    await Tour.findByIdAndDelete(id, { session });
+    // delete the images from cloudinary if there is any tour image==>
+    if (isExist?.images && !!isExist?.images?.length) {
+      await Promise.all(
+        isExist?.images?.map((url) => deleteCloudinaryImage(url))
+      );
+    }
+
+    await session.commitTransaction();
+    session.endSession();
+  } catch (error) {
+    await session.abortTransaction();
+    session.endSession();
+    throw error;
+  }
 };
 
 export const TourServices = {

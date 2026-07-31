@@ -4,6 +4,7 @@ import { catchAsync } from '../../utils/catchAsync';
 import sendResponse from '../../utils/sendResponse';
 import { TourServices } from './tour.service';
 import AppError from '../../errorHelpers/AppError';
+import { ITour } from './tour.interface';
 
 // ============= Tour Types ================
 
@@ -81,7 +82,15 @@ const deleteTourTypes = catchAsync(async (req: Request, res: Response) => {
 
 // create tour==>
 const createTour = catchAsync(async (req: Request, res: Response) => {
-  const response = await TourServices.createTour(req.body);
+  const imageUrls = (req.files as Express.Multer.File[])?.map(
+    (item) => item?.path
+  );
+
+  const payload: ITour = {
+    ...req.body,
+    images: [...imageUrls],
+  };
+  const response = await TourServices.createTour(payload);
 
   sendResponse(res, {
     success: true,
@@ -135,7 +144,15 @@ const updateTour = catchAsync(async (req: Request, res: Response) => {
     throw new AppError(httpStatus.BAD_REQUEST, 'Tour id is missing');
   }
 
-  const response = await TourServices.updateTour(id, req.body);
+  const newImageUrls = (req.files as Express.Multer.File[])?.map(
+    (item) => item?.path
+  );
+
+  const payload: ITour = {
+    ...req.body,
+    images: [...newImageUrls],
+  };
+  const response = await TourServices.updateTour(id, payload);
 
   sendResponse(res, {
     success: true,
